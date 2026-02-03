@@ -6,28 +6,72 @@
     <title>CS Market</title>
     <link href="{{ url_for('static', filename='css/output.css') }}" rel="stylesheet">
 </head>
-<body class="p-6">
-        <div class="mx-auto">
+<body class="p-6 bg-gray-50 text-gray-800">
+    <div class="mx-auto max-w-7xl">
+
         <div class="flex gap-6 mb-8 items-center">
-            <input type="text" placeholder="Search" class="flex-grow border-2">
+            <input type="text" placeholder="Search" class="flex-grow border-2 p-2 rounded">
             <div class="flex gap-4">
-                <button class="border-2 px-8">User</button>
-                <button class="border-2 px-8">Cart</button>
+                <button class="border-2 px-8 py-2 bg-white rounded font-bold">User</button>
+                <button class="border-2 px-8 py-2 bg-white rounded font-bold">Cart</button>
             </div>
         </div>
+
         <div class="flex gap-4 mb-8">
-            <button class="border-2">Filtering</button>
-            <button class="border-2">Sorting</button>
+            <button class="border-2 px-4 py-1 bg-white rounded">Filtering</button>
+            <button class="border-2 px-4 py-1 bg-white rounded">Sorting</button>
         </div>
-        <div class="grid grid-cols-5 gap-4">
-            {% for skin in temp_skins %}
-            <div class="aspect-square border-2 p-4 flex flex-col justify-between">
-                <div class="flex-grow flex items-center justify-center border ">
-                    <span>IMG</span>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            {% for skin in skins %}
+            <div class="aspect-square border-2 p-4 flex flex-col justify-between bg-white rounded hover:shadow-lg transition-shadow">
+
+                <div class="flex-grow flex items-center justify-center border-b mb-2 overflow-hidden relative">
+                    {% if skin.image %}
+                        <img src="{{ skin.image }}" alt="{{ skin.name }}" class="max-w-full max-h-full object-contain">
+                    {% else %}
+                        <span class="text-gray-300 font-bold">No Image</span>
+                    {% endif %}
                 </div>
-                    <h3 class="text-sm">{{skin.name}}</h3>
+
+                <div>
+                    <h3 class="text-xs font-bold truncate" title="{{ skin.name }}">{{ skin.name }}</h3>
+                    <div class="flex justify-between items-end mt-1">
+                        <span class="text-[10px] text-gray-500">{{ skin.wear_name }}</span>
+
+                        <span class="text-sm font-bold text-green-600">
+                            {{ skin.price }}€
+                        </span>
+                    </div>
+                </div>
             </div>
             {% endfor %}
+        </div>
+
+        <div class="flex justify-center items-center gap-4 mt-8 py-6 border-t">
+            {% if page > 1 %}
+                <a href="{{ url_for('index', page=page-1) }}" class="border-2 px-6 py-2 bg-white rounded hover:bg-gray-100 font-bold">
+                    &larr; Previous
+                </a>
+            {% else %}
+                <span class="border-2 px-6 py-2 bg-gray-100 text-gray-400 rounded cursor-not-allowed">
+                    &larr; Previous
+                </span>
+            {% endif %}
+
+            <span class="font-mono font-bold text-gray-600">
+                Page {{ page }} of {{ total_pages }}
+            </span>
+
+            {% if page < total_pages %}
+                <a href="{{ url_for('index', page=page+1) }}" class="border-2 px-6 py-2 bg-white rounded hover:bg-gray-100 font-bold">
+                    Next &rarr;
+                </a>
+            {% else %}
+                <span class="border-2 px-6 py-2 bg-gray-100 text-gray-400 rounded cursor-not-allowed">
+                    Next &rarr;
+                </span>
+            {% endif %}
         </div>
 
     </div>
