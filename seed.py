@@ -11,6 +11,7 @@ def seed_data():
         count = 0
         for item in data:
             new_skin = Skin(
+                id=item["id"],
                 name=item.get("name"),
                 image=item.get("image"),
                 price=item.get("price"),
