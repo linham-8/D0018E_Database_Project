@@ -4,6 +4,7 @@ with open("skins.json", "r", encoding="utf-8") as f:
     skins = json.load(f)
 
 market_items = []
+current_id = 1
 
 for skin in skins:
     if not skin.get("name"):
@@ -53,6 +54,7 @@ for skin in skins:
         final_price = base_price * wear_factor * random.uniform(0.9, 1.1)
 
         item = {
+            "id": current_id,
             "template_id": skin.get("id"),
             "name": skin.get("name"),
             "image": skin.get("image"),
@@ -65,6 +67,7 @@ for skin in skins:
         }
         
         market_items.append(item)
+        current_id += 1
 
 with open("final_market.json", 'w', encoding="utf-8") as f:
     json.dump(market_items, f, indent=4, ensure_ascii=False)
