@@ -1,5 +1,6 @@
 import json
 import random
+
 with open("skins.json", "r", encoding="utf-8") as f:
     skins = json.load(f)
 
@@ -10,14 +11,16 @@ for skin in skins:
     if not skin.get("name"):
         continue
 
-    amount_copies = random.randint(1, 5)
+    amount_copies = random.randint(20, 40)
 
     for i in range(amount_copies):
-        min_float = skin.get('min_float', 0.0)
-        max_float = skin.get('max_float', 1.0)
-        
-        if min_float is None: min_float = 0.0
-        if max_float is None: max_float = 1.0
+        min_float = skin.get("min_float", 0.0)
+        max_float = skin.get("max_float", 1.0)
+
+        if min_float is None:
+            min_float = 0.0
+        if max_float is None:
+            max_float = 1.0
 
         float_value = random.uniform(min_float, max_float)
 
@@ -42,14 +45,22 @@ for skin in skins:
         else:
             rarity = str(rarity_data) if rarity_data else "Unknown"
 
-        if rarity == "Consumer Grade": base_price = 0.5
-        elif rarity == "Industrial Grade": base_price = 2.5
-        elif rarity == "Mil-Spec Grade": base_price = 5
-        elif rarity == "Restricted": base_price = 25
-        elif rarity == "Classified": base_price = 40
-        elif rarity == "Covert": base_price = 750
-        elif rarity == "Extraordinary": base_price = 1000
-        else: base_price = 5.0
+        if rarity == "Consumer Grade":
+            base_price = 0.5
+        elif rarity == "Industrial Grade":
+            base_price = 2.5
+        elif rarity == "Mil-Spec Grade":
+            base_price = 5
+        elif rarity == "Restricted":
+            base_price = 25
+        elif rarity == "Classified":
+            base_price = 40
+        elif rarity == "Covert":
+            base_price = 750
+        elif rarity == "Extraordinary":
+            base_price = 1000
+        else:
+            base_price = 5.0
 
         final_price = base_price * wear_factor * random.uniform(0.9, 1.1)
 
@@ -63,11 +74,12 @@ for skin in skins:
             "wear": wear,
             "price": round(final_price, 2),
             "seed": random.randint(0, 1000),
-            "is_stattrak": random.random() < 0.1
+            "is_stattrak": random.random() < 0.1,
+            "pattern": skin.get("pattern"),
         }
-        
+
         market_items.append(item)
         current_id += 1
 
-with open("final_market.json", 'w', encoding="utf-8") as f:
+with open("final_market.json", "w", encoding="utf-8") as f:
     json.dump(market_items, f, indent=4, ensure_ascii=False)
