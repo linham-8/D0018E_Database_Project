@@ -114,6 +114,32 @@ class Skin(db.Model):
     paint_seed = db.Column(db.Integer)
     is_stattrak = db.Column(db.Boolean, default=False)
 
+class User(db.Model):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    user_type = db.Column(db.String(16), default='customer')
+    username = db.Column(db.String(64), unique=True, nullable=False)
+    password = db.Column(db.String(256), nullable=False)
+    info = db.relationship('UserInfo', backref='user_account', uselist=False)
+    transactions = db.relationship('Transaction', backref='buyer', lazy=True)
+
+class UserInfo(db.Model):
+    __tablename__ = 'user_info'
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    first_name = db.Column(db.String(128))
+    last_name = db.Column(db.String(128))
+    email = db.Column(db.String(128), unique=True)
+    phone_number = db.Column(db.String(32))
+    address = db.Column(db.String(128))
+
+class Transaction(db.Model):
+    __tablename__ = 'transactions'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    skin_id = db.Column(db.Integer, db.ForeignKey('skins.id'), nullable=False)
+    transaction_price = db.Column(db.Float, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.now)
+
 
 def apply_common_filters(query, filters):
     if filters.get("weapon"):
