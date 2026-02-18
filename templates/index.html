@@ -1,7 +1,7 @@
 {% extends "base.html" %} {% from "macros.html" import group_card, skin_card,
 pagination_widget %} {% block content %}
 <div class="mx-auto max-w-7xl p-6 flex flex-col md:flex-row gap-6">
-  <aside class="w-full md:w-64 flex-shrink-0">
+  <aside class="w-full md:w-64 shrink-0">
     <form
       id="filterForm"
       action="/"
@@ -281,7 +281,7 @@ pagination_widget %} {% block content %}
     </form>
   </aside>
 
-  <div class="flex-grow">
+  <div class="grow">
     {% if grouped_view %}
     <h2 class="text-xl font-bold text-gray-400 mb-4">
       Browsing {{ browse_title }}
