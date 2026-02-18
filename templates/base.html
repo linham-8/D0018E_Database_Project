@@ -66,7 +66,7 @@
             <div class="mx-auto max-w-7xl px-6 flex justify-center gap-8 text-sm font-bold uppercase tracking-wide">
                 {% for category, weapons in weapon_categories.items() %}
                 <div class="group relative py-3 cursor-pointer">
-                    <a href="{{ url_for('index', category=category) }}"
+                    <a href="{{ url_for_args('index', category=category, weapon=None, search=None) }}"
                         class="text-gray-400 group-hover:text-white transition-colors block">
                         {{ category }}
                     </a>
@@ -74,7 +74,7 @@
                     <div
                         class="absolute left-1/2 transform -translate-x-1/2 top-full hidden group-hover:block bg-gray-800 border border-gray-700 shadow-2xl rounded-b-card z-50 w-48 py-2">
                         {% for weapon in weapons %}
-                        <a href="{{ url_for_args('index', weapon=weapon, category=None) }}"
+                        <a href="{{ url_for_args('index', weapon=weapon, category=None, search=None) }}"
                             class="block px-4 py-2 text-gray-400 hover:text-white hover:bg-gray-700 text-center normal-case first:rounded-t-sm last:rounded-b-sm">
                             {{ weapon }}
                         </a>
