@@ -1,315 +1,116 @@
-{% extends "base.html" %} {% from "macros.html" import group_card, skin_card,
-pagination_widget %} {% block content %}
+{% extends "base.html" %}
+{% from "macros.html" import group_card, skin_card, pagination_widget %}
+
+{% block content %}
 <div class="mx-auto max-w-7xl p-6 flex flex-col md:flex-row gap-6">
-  <aside class="w-full md:w-64 shrink-0">
-    <form
-      id="filterForm"
-      action="/"
-      method="GET"
-      class="bg-gray-800 p-4 rounded-card border border-gray-700 space-y-6 sticky top-6"
-    >
-      <div>
-        <label class="block text-xs font-bold text-gray-500 mb-2 uppercase"
-          >Sort By</label
-        >
-        <select
-          name="sort"
-          class="w-full bg-gray-900 border border-gray-600 rounded-btn p-2 text-sm text-gray-200 focus:border-accent outline-none"
-        >
-          <option
-            value="default"
-            {%
-            if
-            current_sort=""
-            ="default"
-            %}selected{%
-            endif
-            %}
-          >
-            Default
-          </option>
-          <option
-            value="price_asc"
-            {%
-            if
-            current_sort=""
-            ="price_asc"
-            %}selected{%
-            endif
-            %}
-          >
-            Price: Low to High
-          </option>
-          <option
-            value="price_desc"
-            {%
-            if
-            current_sort=""
-            ="price_desc"
-            %}selected{%
-            endif
-            %}
-          >
-            Price: High to Low
-          </option>
-          <option
-            value="float_asc"
-            {%
-            if
-            current_sort=""
-            ="float_asc"
-            %}selected{%
-            endif
-            %}
-          >
-            Float: Low to High
-          </option>
-          <option
-            value="float_desc"
-            {%
-            if
-            current_sort=""
-            ="float_desc"
-            %}selected{%
-            endif
-            %}
-          >
-            Float: High to Low
-          </option>
-        </select>
-      </div>
 
-      <div>
-        <label class="block text-xs font-bold text-gray-500 mb-2 uppercase"
-          >Doppler Phase</label
-        >
-        <select
-          name="phase"
-          class="w-full bg-gray-900 border border-gray-600 rounded-btn p-2 text-sm text-gray-200 focus:border-accent outline-none"
-        >
-          <option value="">Any Phase</option>
-          <option
-            value="Phase 1"
-            {%
-            if
-            current_phase=""
-            ="Phase 1"
-            %}selected{%
-            endif
-            %}
-          >
-            Phase 1
-          </option>
-          <option
-            value="Phase 2"
-            {%
-            if
-            current_phase=""
-            ="Phase 2"
-            %}selected{%
-            endif
-            %}
-          >
-            Phase 2
-          </option>
-          <option
-            value="Phase 3"
-            {%
-            if
-            current_phase=""
-            ="Phase 3"
-            %}selected{%
-            endif
-            %}
-          >
-            Phase 3
-          </option>
-          <option
-            value="Phase 4"
-            {%
-            if
-            current_phase=""
-            ="Phase 4"
-            %}selected{%
-            endif
-            %}
-          >
-            Phase 4
-          </option>
-          <option
-            value="Sapphire"
-            {%
-            if
-            current_phase=""
-            ="Sapphire"
-            %}selected{%
-            endif
-            %}
-          >
-            Sapphire
-          </option>
-          <option
-            value="Ruby"
-            {%
-            if
-            current_phase=""
-            ="Ruby"
-            %}selected{%
-            endif
-            %}
-          >
-            Ruby
-          </option>
-          <option
-            value="Emerald"
-            {%
-            if
-            current_phase=""
-            ="Emerald"
-            %}selected{%
-            endif
-            %}
-          >
-            Emerald
-          </option>
-          <option
-            value="Black Pearl"
-            {%
-            if
-            current_phase=""
-            ="Black Pearl"
-            %}selected{%
-            endif
-            %}
-          >
-            Black Pearl
-          </option>
-        </select>
-      </div>
+    <aside class="w-full md:w-64 flex-shrink-0">
+        <form id="filterForm" action="/" method="GET"
+            class="bg-gray-800 p-4 rounded-card border border-gray-700 space-y-6 sticky top-6">
 
-      <div>
-        <label class="block text-xs font-bold text-gray-500 mb-2 uppercase"
-          >Float Range</label
-        >
-        <div class="grid grid-cols-5 gap-1 mb-2">
-          <button
-            type="button"
-            onclick="setWear(0.00, 0.07)"
-            class="bg-gray-700 hover:bg-green-600 text-[10px] py-1 rounded-btn transition-colors"
-          >
-            FN
-          </button>
-          <button
-            type="button"
-            onclick="setWear(0.07, 0.15)"
-            class="bg-gray-700 hover:bg-green-500 text-[10px] py-1 rounded-btn transition-colors"
-          >
-            MW
-          </button>
-          <button
-            type="button"
-            onclick="setWear(0.15, 0.38)"
-            class="bg-gray-700 hover:bg-accent hover:text-gray-900 text-[10px] py-1 rounded-btn transition-colors"
-          >
-            FT
-          </button>
-          <button
-            type="button"
-            onclick="setWear(0.38, 0.45)"
-            class="bg-gray-700 hover:bg-orange-500 text-[10px] py-1 rounded-btn transition-colors"
-          >
-            WW
-          </button>
-          <button
-            type="button"
-            onclick="setWear(0.45, 1.00)"
-            class="bg-gray-700 hover:bg-red-600 text-[10px] py-1 rounded-btn transition-colors"
-          >
-            BS
-          </button>
+            <div>
+                <label class="block text-xs font-bold text-gray-500 mb-2 uppercase">Sort By</label>
+                <select name="sort"
+                    class="w-full bg-gray-900 border border-gray-600 rounded-btn p-2 text-sm text-gray-200 focus:border-accent outline-none">
+                    <option value="default" {% if current_sort=='default' %}selected{% endif %}>Default</option>
+                    <option value="price_asc" {% if current_sort=='price_asc' %}selected{% endif %}>Price: Low to High
+                    </option>
+                    <option value="price_desc" {% if current_sort=='price_desc' %}selected{% endif %}>Price: High to Low
+                    </option>
+                    <option value="float_asc" {% if current_sort=='float_asc' %}selected{% endif %}>Float: Low to High
+                    </option>
+                    <option value="float_desc" {% if current_sort=='float_desc' %}selected{% endif %}>Float: High to Low
+                    </option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-500 mb-2 uppercase">Doppler Phase</label>
+                <select name="phase"
+                    class="w-full bg-gray-900 border border-gray-600 rounded-btn p-2 text-sm text-gray-200 focus:border-accent outline-none">
+                    <option value="">Any Phase</option>
+                    <option value="Phase 1" {% if current_phase=='Phase 1' %}selected{% endif %}>Phase 1</option>
+                    <option value="Phase 2" {% if current_phase=='Phase 2' %}selected{% endif %}>Phase 2</option>
+                    <option value="Phase 3" {% if current_phase=='Phase 3' %}selected{% endif %}>Phase 3</option>
+                    <option value="Phase 4" {% if current_phase=='Phase 4' %}selected{% endif %}>Phase 4</option>
+                    <option value="Sapphire" {% if current_phase=='Sapphire' %}selected{% endif %}>Sapphire</option>
+                    <option value="Ruby" {% if current_phase=='Ruby' %}selected{% endif %}>Ruby</option>
+                    <option value="Emerald" {% if current_phase=='Emerald' %}selected{% endif %}>Emerald</option>
+                    <option value="Black Pearl" {% if current_phase=='Black Pearl' %}selected{% endif %}>Black Pearl
+                    </option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-500 mb-2 uppercase">Float Range</label>
+                <div class="grid grid-cols-5 gap-1 mb-2">
+                    <button type="button" onclick="setWear(0.00, 0.07)"
+                        class="bg-gray-700 hover:bg-green-600 text-[10px] py-1 rounded-btn transition-colors">FN</button>
+                    <button type="button" onclick="setWear(0.07, 0.15)"
+                        class="bg-gray-700 hover:bg-green-500 text-[10px] py-1 rounded-btn transition-colors">MW</button>
+                    <button type="button" onclick="setWear(0.15, 0.38)"
+                        class="bg-gray-700 hover:bg-accent hover:text-gray-900 text-[10px] py-1 rounded-btn transition-colors">FT</button>
+                    <button type="button" onclick="setWear(0.38, 0.45)"
+                        class="bg-gray-700 hover:bg-orange-500 text-[10px] py-1 rounded-btn transition-colors">WW</button>
+                    <button type="button" onclick="setWear(0.45, 1.00)"
+                        class="bg-gray-700 hover:bg-red-600 text-[10px] py-1 rounded-btn transition-colors">BS</button>
+                </div>
+                <div class="flex gap-2">
+                    <input type="number" id="min_float" name="min_float" step="0.01" value="{{ current_min_float }}"
+                        class="w-1/2 bg-gray-900 border border-gray-600 rounded-btn p-1 text-center text-sm focus:border-accent outline-none">
+                    <input type="number" id="max_float" name="max_float" step="0.01" value="{{ current_max_float }}"
+                        class="w-1/2 bg-gray-900 border border-gray-600 rounded-btn p-1 text-center text-sm focus:border-accent outline-none">
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <input type="checkbox" id="stattrak" name="stattrak" {% if current_stattrak %}checked{% endif %}
+                    class="w-4 h-4 bg-gray-900 border-gray-600 rounded text-accent focus:ring-0">
+                <label for="stattrak" class="text-sm font-bold text-gray-300">StatTrak™ Only</label>
+            </div>
+
+            {% if current_weapon %}
+            <input type="hidden" name="weapon" value="{{ current_weapon }}">
+            {% endif %}
+
+            {% if current_category %}
+            <input type="hidden" name="category" value="{{ current_category }}">
+            {% endif %}
+
+            <button type="submit"
+                class="w-full bg-accent hover:bg-accent-hover text-gray-900 font-bold py-2 rounded-btn transition-colors text-sm">
+                Apply Filters
+            </button>
+        </form>
+    </aside>
+
+    <div class="flex-grow">
+        {% if grouped_view %}
+        <h2 class="text-xl font-bold text-gray-400 mb-4">Browsing {{ browse_title }}</h2>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {% for skin in grouped_skins %}
+            {{ group_card(skin, current_phase) }}
+            {% endfor %}
         </div>
-        <div class="flex gap-2">
-          <input
-            type="number"
-            id="min_float"
-            name="min_float"
-            step="0.01"
-            value="{{ current_min_float }}"
-            class="w-1/2 bg-gray-900 border border-gray-600 rounded-btn p-1 text-center text-sm focus:border-accent outline-none"
-          />
-          <input
-            type="number"
-            id="max_float"
-            name="max_float"
-            step="0.01"
-            value="{{ current_max_float }}"
-            class="w-1/2 bg-gray-900 border border-gray-600 rounded-btn p-1 text-center text-sm focus:border-accent outline-none"
-          />
+
+        {% else %}
+        <h2 class="text-xl font-bold text-gray-400 mb-4">Market Listings</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {% for skin in skins %}
+            {{ skin_card(skin) }}
+            {% endfor %}
         </div>
-      </div>
 
-      <div class="flex items-center gap-3">
-        <input
-          type="checkbox"
-          id="stattrak"
-          name="stattrak"
-          {%
-          if
-          current_stattrak
-          %}checked{%
-          endif
-          %}
-          class="w-4 h-4 bg-gray-900 border-gray-600 rounded text-accent focus:ring-0"
-        />
-        <label for="stattrak" class="text-sm font-bold text-gray-300"
-          >StatTrak™ Only</label
-        >
-      </div>
-
-      {% if current_weapon %}
-      <input type="hidden" name="weapon" value="{{ current_weapon }}" />
-      {% endif %} {% if current_category %}
-      <input type="hidden" name="category" value="{{ current_category }}" />
-      {% endif %}
-
-      <button
-        type="submit"
-        class="w-full bg-accent hover:bg-accent-hover text-gray-900 font-bold py-2 rounded-btn transition-colors text-sm"
-      >
-        Apply Filters
-      </button>
-    </form>
-  </aside>
-
-  <div class="grow">
-    {% if grouped_view %}
-    <h2 class="text-xl font-bold text-gray-400 mb-4">
-      Browsing {{ browse_title }}
-    </h2>
-
-    <div
-      class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"
-    >
-      {% for skin in grouped_skins %} {{ group_card(skin, current_phase) }} {%
-      endfor %}
+        {{ pagination_widget(pagination, 'index') }}
+        {% endif %}
     </div>
-
-    {% else %}
-    <h2 class="text-xl font-bold text-gray-400 mb-4">Market Listings</h2>
-    <div
-      class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"
-    >
-      {% for skin in skins %} {{ skin_card(skin) }} {% endfor %}
-    </div>
-
-    {{ pagination_widget(pagination, 'index') }} {% endif %}
-  </div>
 </div>
 
 <script>
-  function setWear(min, max) {
-    document.getElementById('min_float').value = min;
-    document.getElementById('max_float').value = max;
-  }
+    function setWear(min, max) {
+        document.getElementById('min_float').value = min;
+        document.getElementById('max_float').value = max;
+    }
 </script>
 {% endblock %}
