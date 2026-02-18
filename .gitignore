@@ -1,0 +1,5 @@
+# Ignore the entire pycache directory (Standard)
+__pycache__/
+
+# Ignore specific Python 3.14 bytecode files
+*.cpython-314.pyc
