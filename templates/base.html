@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS Market</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gray: {
+                            800: '#1f2937',
+                            900: '#111827',
+                        },
+                        accent: {
+                            DEFAULT: '#eab308',
+                            hover: '#ca8a04',
+                        },
+                        rarity: {
+                            common: '#b0c3d9',
+                            industrial: '#5e98d9',
+                            milspec: '#4b69ff',
+                            restricted: '#8847ff',
+                            classified: '#d32ce6',
+                            covert: '#eb4b4b',
+                            contraband: '#e4ae39',
+                        }
+                    },
+
+                    borderRadius: {
+                        'card': '0.75rem',
+
+                        'btn': '0.5rem',
+
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-gray-900 text-gray-100 font-sans">
+
+    <div class="bg-gray-800 border-b border-gray-700 sticky top-0 z-50">
+        <div class="mx-auto max-w-7xl px-6 py-4 flex justify-between items-center">
+            <a href="/" class="hover:opacity-80 transition-opacity">
+                <h1 class="text-2xl font-bold text-accent tracking-wider uppercase">CSMARKET</h1>
+            </a>
+
+            <div class="flex-grow mx-8">
+                <input type="text" name="search" form="filterForm" value="{{ current_search }}" placeholder="Search"
+                    class="w-full bg-gray-900 border border-gray-600 text-white p-2 rounded-btn focus:outline-none focus:border-accent transition-colors">
+            </div>
+
+            <div class="flex gap-4">
+                <button class="px-6 py-2 bg-gray-700 hover:bg-gray-600 rounded-btn font-bold transition">User</button>
+                <button class="px-6 py-2 bg-gray-700 hover:bg-gray-600 rounded-btn font-bold transition">Cart</button>
+            </div>
+        </div>
+
+        <div class="bg-gray-900 border-b border-gray-800">
+            <div class="mx-auto max-w-7xl px-6 flex justify-center gap-8 text-sm font-bold uppercase tracking-wide">
+                {% for category, weapons in weapon_categories.items() %}
+                <div class="group relative py-3 cursor-pointer">
+                    <a href="{{ url_for_args('index', category=category, weapon=None, search=None) }}"
+                        class="text-gray-400 group-hover:text-white transition-colors block">
+                        {{ category }}
+                    </a>
+
+                    <div
+                        class="absolute left-1/2 transform -translate-x-1/2 top-full hidden group-hover:block bg-gray-800 border border-gray-700 shadow-2xl rounded-b-card z-50 w-48 py-2">
+                        {% for weapon in weapons %}
+                        <a href="{{ url_for_args('index', weapon=weapon, category=None, search=None) }}"
+                            class="block px-4 py-2 text-gray-400 hover:text-white hover:bg-gray-700 text-center normal-case first:rounded-t-sm last:rounded-b-sm">
+                            {{ weapon }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    {% block content %}{% endblock %}
+
+</body>
+
+</html>
