@@ -24,11 +24,9 @@ document.addEventListener('DOMContentLoaded', () => {
       imgElement.src = data.image;
       imgElement.alt = data.name;
 
-      // 4. Populate Advanced Stats
       document.getElementById('modalFloat').textContent = data.float;
       document.getElementById('modalSeed').textContent = data.seed;
 
-      // 5. Handle Pattern UI
       const patternContainer = document.getElementById('modalPatternContainer');
       if (data.pattern && data.pattern !== 'None' && data.pattern !== '') {
         document.getElementById('modalPattern').textContent = data.pattern;
@@ -39,7 +37,6 @@ document.addEventListener('DOMContentLoaded', () => {
         patternContainer.classList.remove('flex');
       }
 
-      // 6. Handle StatTrak UI
       const statTrakBadge = document.getElementById('modalStatTrak');
       if (data.stattrak === 'True' || data.stattrak === 'true') {
         statTrakBadge.classList.remove('hidden');
@@ -49,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
         statTrakBadge.classList.remove('block');
       }
 
-      // Optional: Store ID globally for the future Add to Cart button
+      // Stores the ID globally for the add to cart button
       window.currentSelectedItemId = data.id;
 
       // 7. Show the modal
