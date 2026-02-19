@@ -45,9 +45,9 @@
     data-price="{{ skin.price }}"
     data-wear="{{ skin.wear_name }}"
     data-image="{{ skin.image }}"
-    data-stattrak="{{ skin.stattrak }}"
-    data-float="{{ skin.float }}"
-    data-seed="{{ skin.seed }}"
+    data-stattrak="{{ skin.is_stattrak }}"
+    data-float="{{ skin.float_value }}"
+    data-seed="{{ skin.paint_seed }}"
     data-rarity="{{ skin.rarity }}"
     data-pattern="{% if skin.pattern %}{{ skin.pattern.name }}{% else %}None{% endif %}">
     <div class="absolute top-0 left-0 right-0 h-1 rounded-t-card opacity-80 {{ get_rarity_class(skin.rarity|string) }}">
