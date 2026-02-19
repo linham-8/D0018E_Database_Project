@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
+    <div class="sm:mx-auto sm:w-full sm:max-w-sm">
+        <h2 class="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-white-900">
+            Create an account
+        </h2>
+    </div>
+
+    <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+        <form class="space-y-6" action="{{ url_for('register') }}" method="POST">
+            <div>
+                <label for="name" class="block text-sm font-medium leading-6 text-white-900">Name</label>
+                <div class="mt-2">
+                    <input id="name" name="name" type="text" required
+                        class="block w-full rounded-md border-0 py-2 px-3 text-gray-900 bg-white">
+                </div>
+            </div>
+
+            <div>
+                <label for="username" class="block text-sm font-medium leading-6 text-white-900">Username</label>
+                <div class="mt-2">
+                    <input id="username" name="username" type="text" required
+                        class="block w-full rounded-md border-0 py-2 px-3 text-gray-900 bg-white">
+                </div>
+            </div>
+
+            <div>
+                <label for="email" class="block text-sm font-medium leading-6 text-white-900">Email address</label>
+                <div class="mt-2">
+                    <input id="email" name="email" type="email" required
+                        class="block w-full rounded-md border-0 py-2 px-3 text-gray-900 bg-white">
+                </div>
+            </div>
+
+            <div>
+                <label for="address" class="block text-sm font-medium leading-6 text-white-900">Address</label>
+                <div class="mt-2">
+                    <input id="address" name="address" type="text" required
+                        class="block w-full rounded-md border-0 py-2 px-3 text-gray-900 bg-white">
+                </div>
+            </div>
+
+            <div>
+                <label for="phone" class="block text-sm font-medium leading-6 text-white-900">Phone number</label>
+                <div class="mt-2">
+                    <input id="phone" name="phone" type="tel" required
+                        class="block w-full rounded-md border-0 py-2 px-3 text-gray-900 bg-white">
+                </div>
+            </div>
+
+            <div>
+                <label for="password" class="block text-sm font-medium leading-6 text-white-900">Password</label>
+                <div class="mt-2">
+                    <input id="password" name="password" type="password" required
+                        class="block w-full rounded-md border-0 py-2 px-3 text-gray-900 bg-white">
+                </div>
+            </div>
+
+            <div>
+                <button type="submit"
+                    class="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-500">
+                    Register
+                </button>
+            </div>
+        </form>
+
+        <p class="mt-10 text-center text-md text-white-500">
+            Log in
+            <a href="{{ url_for('login') }}" class="font-semibold leading-6 text-indigo-600 hover:text-indigo-500">
+                here
+            </a>
+        </p>
+    </div>
+</div>
+{% endblock %}
