@@ -51,7 +51,7 @@
                 <h1 class="text-2xl font-bold text-accent tracking-wider uppercase">CSMARKET</h1>
             </a>
 
-            <div class="flex-grow mx-8">
+            <div class="grow mx-8">
                 <input type="text" name="search" form="filterForm" value="{{ current_search }}" placeholder="Search"
                     class="w-full bg-gray-900 border border-gray-600 text-white p-2 rounded-btn focus:outline-none focus:border-accent transition-colors">
             </div>
@@ -87,6 +87,58 @@
     </div>
 
     {% block content %}{% endblock %}
+
+    <div id="itemModal" class="fixed inset-0 z-100 hidden bg-black/80 justify-center items-center backdrop-blur-sm" onclick="closeModal()">
+      <div class="bg-gray-800 border border-gray-700 rounded-card shadow-2xl w-11/12 md:w-1/3 overflow-hidden relative" onclick="event.stopPropagation()">
+        <button onclick="closeModal()" class="absolute top-3 right-4 text-gray-400 hover:text-accent text-3xl font-bold transition-colors">&times;</button>
+
+        <div class="p-6">
+          <div class="flex justify-center mb-6 bg-graybg-gray-900 rounded-card p-4 border border-gray-700">
+            <img id="modalImage" src="" alt="Skin" class="max-h-60 object-contain">
+          </div>
+
+          <div class="mb-4">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <p id="modalItemId" class="text-xs text-gray-500 font-mono mb-1">Item ID:</p>
+                <h2 id="modalName" class="text-xl font-bold text-gray-100">Skin name</h2>
+
+                <div class="flex items-center gap-2 mt-1">
+                  <p id="modalWear" class="text-gray-400 text-sm mt-1">Wear Level</p>
+                  <span class="text-gray-600 text-xs">-</span>
+                  <p id="modalRarity" class="text-gray-400 text-sm">Rarity</p>
+                </div>
+
+                <span id="modalStatTrak" class="hidden text-[10px] text-orange-500 font-bold tracking-wider mt-1 uppercase">StatTrak</span>
+              </div>
+              <span id="modalPrice" class="text-2xl font-bold text-green-400">0.00€</span>
+            </div>
+            <div class="grid grid-cols-2 gap-3 p-3 bg-gray-900 border-gray-700 rounded-card text-sm">
+              <div class="flex flex-col">
+                <span class="text-gray-500 text-xs uppercase font-bold tracking-wider">Float</span>
+                <span id="modalFloat" class="text-gray-200 font-mono">0.00000000</span>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-gray-500 text-xs uppercase font-bold tracking-wider">Paint Seed</span>
+                <span id="modalSeed" class="text-gray-200">0</span>
+              </div>
+              <div class="flex-col col-span-2 hidden" id="modalPatternContainer">
+                <span class="text-gray-500 text-xs uppercase font-bold tracking-wider">Pattern</span>
+                <span id="modalPattern" class="text-gray-200 text-xs">None</span>
+              </div>
+            </div>
+          </div>
+          <div class="mt-8 flex gap-4">
+            <button class="flex-1 bg-accent text-gray-900 py-2 rounded-btn font-bold hover:bg-opacity-90 transition-opacity">
+              Add to Cart
+            </button>
+            <button onclick="closeModal()" class="px-6 py-2 bg-gray-700 border border-gray-600 text-gray-200 rounded-btn font-bold hover:bg-gray-600 transition-colors">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
 </body>
 

@@ -10,12 +10,12 @@
 
 {% macro group_card(skin, current_phase) %}
 <a href="{{ url_for_args('index', search=skin.name) }}"
-    class="block aspect-square border border-gray-700 p-4 flex flex-col justify-between bg-gray-800 rounded-card hover:shadow-xl hover:border-accent transition-all relative group">
+    class="aspect-square border border-gray-700 p-4 flex flex-col justify-between bg-gray-800 rounded-card hover:shadow-xl hover:border-accent transition-all relative group">
 
     <div class="absolute top-0 left-0 right-0 h-1 rounded-t-card opacity-80 {{ get_rarity_class(skin.rarity|string) }}">
     </div>
 
-    <div class="flex-grow flex items-center justify-center mb-2 overflow-hidden">
+    <div class="grow flex items-center justify-center mb-2 overflow-hidden">
         {% if skin.image %}
         <img src="{{ skin.image }}" alt="{{ skin.name }}"
             class="max-w-full max-h-full object-contain transform group-hover:scale-110 transition-transform duration-300">
@@ -39,10 +39,20 @@
 
 {% macro skin_card(skin) %}
 <div
-    class="aspect-square border border-gray-700 p-4 flex flex-col justify-between bg-gray-800 rounded-card hover:shadow-lg transition-all relative group">
+    class="js-skin-card cursor-pointer aspect-square border border-gray-700 p-4 flex flex-col justify-between bg-gray-800 rounded-card hover:shadow-lg transition-all relative group"
+    data-id="{{ skin.id }}"
+    data-name="{{ skin.name}}"
+    data-price="{{ skin.price }}"
+    data-wear="{{ skin.wear_name }}"
+    data-image="{{ skin.image }}"
+    data-stattrak="{{ skin.stattrak }}"
+    data-float="{{ skin.float }}"
+    data-seed="{{ skin.seed }}"
+    data-rarity="{{ skin.rarity }}"
+    data-pattern="{% if skin.pattern %}{{ skin.pattern.name }}{% else %}None{% endif %}">
     <div class="absolute top-0 left-0 right-0 h-1 rounded-t-card opacity-80 {{ get_rarity_class(skin.rarity|string) }}">
     </div>
-    <div class="flex-grow flex items-center justify-center border-b border-gray-700 mb-2 overflow-hidden relative">
+    <div class="grow flex items-center justify-center border-b border-gray-700 mb-2 overflow-hidden relative">
         {% if skin.image %}
         <img src="{{ skin.image }}" alt="{{ skin.name }}"
             class="max-w-full max-h-full object-contain transform group-hover:scale-110 transition-transform duration-300">
