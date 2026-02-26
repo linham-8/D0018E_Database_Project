@@ -1,6 +1,7 @@
-from flask import render_template, request, url_for, redirect, flash
+from flask import render_template, request, url_for, redirect, flash, abort
 from flask_login import login_user, logout_user, login_required, current_user
 from sqlalchemy import func
+from functools import wraps
 from extensions import db, app
 from models import Skin, User, UserInfo, Transaction
 
@@ -148,6 +149,14 @@ def get_list_view_data(filters, sort_by, page):
     return query.paginate(page=page, per_page=50)
 
 
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or current_user.user_type != 'admin':
+            abort(403)
+        return f(*args, **kwargs)
+    return decorated_function
+
 @app.route("/")
 def index():
     filters = {
@@ -218,8 +227,11 @@ def register():
     if current_user.is_authenticated:
         return redirect(url_for)('index')
     if request.method == 'POST':
+        first_user = User.query.count() == 0
         user = User(username=request.form['username'])
         user.set_password(request.form['password'])
+        if first_user:
+            user.user_type = 'admin'
         db.session.add(user)
         db.session.flush()
 
@@ -245,6 +257,11 @@ def logout():
 @login_required
 def user():
     return render_template("user.html")
+
+@app.route("/admin", methods=['GET', 'POST'])
+@admin_required
+def admin():
+    return render_template("admin.html")
 
 @app.route("/cart", methods=['GET', 'POST'])
 @login_required
