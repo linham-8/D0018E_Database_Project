@@ -1,16 +1,9 @@
-from flask import Flask, render_template, request, url_for
-from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from flask import render_template, request, url_for, redirect, flash
+from flask_login import login_user, logout_user, login_required, current_user
 from sqlalchemy import func
+from extensions import db, app
+from models import Skin, User, UserInfo, Transaction
 
-app = Flask(__name__)
-
-app.config["SQLALCHEMY_DATABASE_URI"] = (
-    "postgresql://postgres:password@localhost:5432/csmarket"
-)
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
-db = SQLAlchemy(app)
 
 WEAPON_CATEGORIES = {
     "Rifles": [
@@ -97,48 +90,6 @@ def url_for_args(endpoint, **values):
 
 
 app.jinja_env.globals["url_for_args"] = url_for_args
-
-
-class Skin(db.Model):
-    __tablename__ = "skins"
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(256), nullable=False)
-    weapon_type = db.Column(db.String(64), index=True)
-    phase = db.Column(db.String(32), index=True)
-    category = db.Column(db.String(32), index=True)
-    image = db.Column(db.Text)
-    price = db.Column(db.Float)
-    float_value = db.Column(db.Float)
-    wear_name = db.Column(db.String(16))
-    rarity = db.Column(db.String(16))
-    paint_seed = db.Column(db.Integer)
-    is_stattrak = db.Column(db.Boolean, default=False)
-
-class User(db.Model):
-    __tablename__ = 'users'
-    id = db.Column(db.Integer, primary_key=True)
-    user_type = db.Column(db.String(16), default='customer')
-    username = db.Column(db.String(64), unique=True, nullable=False)
-    password = db.Column(db.String(256), nullable=False)
-    info = db.relationship('UserInfo', backref='user_account', uselist=False)
-    transactions = db.relationship('Transaction', backref='buyer', lazy=True)
-
-class UserInfo(db.Model):
-    __tablename__ = 'user_info'
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-    first_name = db.Column(db.String(128))
-    last_name = db.Column(db.String(128))
-    email = db.Column(db.String(128), unique=True)
-    phone_number = db.Column(db.String(32))
-    address = db.Column(db.String(128))
-
-class Transaction(db.Model):
-    __tablename__ = 'transactions'
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    skin_id = db.Column(db.Integer, db.ForeignKey('skins.id'), nullable=False)
-    transaction_price = db.Column(db.Float, nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.now)
 
 
 def apply_common_filters(query, filters):
@@ -239,6 +190,66 @@ def index():
 
     return render_template("index.html", **context)
 
+
+@app.route("/login", methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for)('index')
+    if request.method == 'POST':
+        login_id = request.form['login-id']
+        user = User.query.filter_by(username=login_id).first()
+        if not user:
+            email = UserInfo.query.filter_by(email=login_id).first()
+            if email:
+                user = email.user_account
+            else:
+                flash('Incorrect credentials', 'error')
+                return redirect(url_for('login'))
+        if user and user.check_password(request.form['password']):
+            login_user(user)
+            return redirect(url_for('index'))
+        else:
+            flash('Incorrect credentials', 'error')
+    return render_template("login.html")
+
+
+@app.route("/register", methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for)('index')
+    if request.method == 'POST':
+        user = User(username=request.form['username'])
+        user.set_password(request.form['password'])
+        db.session.add(user)
+        db.session.flush()
+
+        user_info = UserInfo(
+            user_account=user,
+            name=request.form['name'],
+            email=request.form['email'],
+            address=request.form['address'],
+            phone_number=request.form['phone'],
+        )
+
+        db.session.add(user_info)
+        db.session.commit()
+        return redirect(url_for('login'))
+    return render_template("register.html")
+
+@app.route("/logout")
+def logout():
+    logout_user()
+    return render_template("login.html")
+
+@app.route("/user", methods=['GET', 'POST'])
+@login_required
+def user():
+    return render_template("user.html")
+
+@app.route("/cart", methods=['GET', 'POST'])
+@login_required
+def cart():
+    return render_template("cart.html")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
