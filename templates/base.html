@@ -157,11 +157,32 @@
                     </div>
                 </div>
                 <div class="mt-8 flex gap-4">
+                  {% if current_user.is_authenticated %}
                     <button
-                        class="w-full bg-accent text-gray-900 py-2 rounded-btn font-bold hover:bg-opacity-90 transition-opacity">
+                        id="addToCartBtn" class="w-full bg-accent text-gray-900 py-2 rounded-btn font-bold hover:bg-opacity-90 transition-opacity">
                         Add to Cart
                     </button>
+                  {% else %}
+                      <a href="{{ url_for('login') }}" class="w-full block text-center bg-gray-700 border border-gray-600 text-gray-200 py-2 rounded-btn font-bold hover:bg-gray-600 hover:text-white transition-colors">
+                        Log in to Purchase & Comment
+                      </a>
+                  {% endif %}
                 </div>
+
+                <div class="mt-8 border-t border-gray-700 pt-6">
+                  <h3 class="text-lg font-bold text-gray-100 mb-4">Comments</h3>
+                  <div id="modalCommentsList" class="space-y-3 mb-4 max-h-40 overflow-y-auto text-sm text-gray-300 pr-2 custom-scrollbar">
+                  </div>
+                  {% if current_user.is_authenticated %}
+                    <div class="flex gap-2">
+                      <input type="text" id="newCommentInput" placeholder="Write a comment..." class="flex-1 bg-gray-900 border border-gray-600 text-white p-2 rounded-btn focus:outline-none focus:border-accent transition-colors">
+                      <button id="submitCommentBtn" class="bg-gray-700 hover:bg-gray-600 text-gray-200 px-4 py-2 rounded-btn font-bold transition-colors border border-gray-600">
+                        Add
+                      </button>
+                    </div>
+                  {% endif %}
+                </div>
+
             </div>
         </div>
     </div>
