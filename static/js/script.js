@@ -71,3 +71,48 @@ document.addEventListener('keydown', e => {
     window.closeModal();
   }
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+  const addToCartBtn = document.getElementById('addToCartBtn');
+  const submitCommentBtn = document.getElementById('submitCommentBtn');
+  const commentsList = document.getElementById('modalCommentsList');
+  // Add to cart logic
+  if (addToCartBtn) {
+    addToCartBtn.addEventListener('click', () => {
+      const itemId = window.currentSelectedItemId;
+      if (!itemId) return;
+
+      console.log(`Adding ${itemId} to cart...`);
+    });
+  }
+  // Add comment logic
+  if (submitCommentBtn) {
+    submitCommentBtn.addEventListener('click', () => {
+      const input = document.getElementById('newCommentInput');
+      if (!input) return;
+
+      const text = input.value.trim();
+      const itemId = window.currentSelectedItemId;
+
+      if (text === '') return;
+
+      console.log(`Submitting review for item ${itemId}: ${text}`);
+    });
+  }
+  // Delete comment logic
+  if (commentsList) {
+    commentsList.addEventListener('click', e => {
+      const delBtn = e.target.closest('.js-delete-comment');
+
+      if (delBtn) {
+        const commentBox = delBtn.closest('.js-comment-box');
+        const commentId = commentBox.dataset.commentId;
+
+        if (confirm('Are you sure you want to delete this comment?')) {
+          console.log(`Deleting comment ID: ${commentId}`);
+          commentBox.remove();
+        }
+      }
+    });
+  }
+});
