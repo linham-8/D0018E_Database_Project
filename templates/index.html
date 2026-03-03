@@ -1,12 +1,12 @@
 {% extends "base.html" %}
-{% from "macros.html" import group_card, skin_card, pagination_widget %}
-
+{% from "macros.html" import group_card, skin_card, pagination_widget with context %}
 {% block content %}
 <div class="mx-auto max-w-7xl p-6 flex flex-col md:flex-row gap-6">
 
-    <aside class="w-full md:w-64 shrink-0">
+    <aside class="w-full md:w-64 shrink-0 sticky top-32 self-start z-10">
+
         <form id="filterForm" action="/" method="GET"
-            class="bg-gray-800 p-4 rounded-card border border-gray-700 space-y-6 sticky top-6">
+            class="bg-gray-800 p-4 rounded-card border border-gray-700 space-y-6 max-h-[calc(100vh-9rem)] overflow-y-auto">
 
             <div>
                 <label class="block text-xs font-bold text-gray-500 mb-2 uppercase">Sort By</label>
@@ -43,17 +43,18 @@
 
             <div>
                 <label class="block text-xs font-bold text-gray-500 mb-2 uppercase">Float Range</label>
-                <div class="grid grid-cols-5 gap-1 mb-2">
-                    <button type="button" onclick="setWear(0.00, 0.07)"
-                        class="bg-gray-700 hover:bg-green-600 text-[10px] py-1 rounded-btn transition-colors">FN</button>
-                    <button type="button" onclick="setWear(0.07, 0.15)"
-                        class="bg-gray-700 hover:bg-green-500 text-[10px] py-1 rounded-btn transition-colors">MW</button>
-                    <button type="button" onclick="setWear(0.15, 0.38)"
-                        class="bg-gray-700 hover:bg-accent hover:text-gray-900 text-[10px] py-1 rounded-btn transition-colors">FT</button>
-                    <button type="button" onclick="setWear(0.38, 0.45)"
-                        class="bg-gray-700 hover:bg-orange-500 text-[10px] py-1 rounded-btn transition-colors">WW</button>
-                    <button type="button" onclick="setWear(0.45, 1.00)"
-                        class="bg-gray-700 hover:bg-red-600 text-[10px] py-1 rounded-btn transition-colors">BS</button>
+                <div class="grid grid-cols-5 gap-1 mb-2" id="wear-btn">
+                    <button type="button" data-min="0.00" data-max="0.07" data-active="bg-green-600 text-white"
+                        class="wear-btn bg-gray-700 text-gray-300 hover:bg-green-600 text-[10px] py-1 rounded-btn transition-colors">FN</button>
+                    <button type="button" data-min="0.07" data-max="0.15" data-active="bg-green-500 text-white"
+                        class="wear-btn bg-gray-700 text-gray-300 hover:bg-green-500 text-[10px] py-1 rounded-btn transition-colors">MW</button>
+                    <button type="button" data-min="0.15" data-max="0.38"
+                        data-active="bg-accent text-gray-900 font-bold"
+                        class="wear-btn bg-gray-700 text-gray-300 hover:bg-accent hover:text-gray-900 text-[10px] py-1 rounded-btn transition-colors">FT</button>
+                    <button type="button" data-min="0.38" data-max="0.45" data-active="bg-orange-500 text-white"
+                        class="wear-btn bg-gray-700 text-gray-300 hover:bg-orange-500 text-[10px] py-1 rounded-btn transition-colors">WW</button>
+                    <button type="button" data-min="0.45" data-max="1.00" data-active="bg-red-600 text-white"
+                        class="wear-btn bg-gray-700 text-gray-300 hover:bg-red-600 text-[10px] py-1 rounded-btn transition-colors">BS</button>
                 </div>
                 <div class="flex gap-2">
                     <input type="number" id="min_float" name="min_float" step="0.01" value="{{ current_min_float }}"
@@ -77,10 +78,16 @@
             <input type="hidden" name="category" value="{{ current_category }}">
             {% endif %}
 
-            <button type="submit"
-                class="w-full bg-accent hover:bg-accent-hover text-gray-900 font-bold py-2 rounded-btn transition-colors text-sm">
-                Apply Filters
-            </button>
+            <div class="flex gap-2">
+                <button type="submit"
+                    class="w-2/3 bg-accent hover:bg-accent-hover text-gray-900 font-bold py-2 rounded-btn transition-colors text-sm">
+                    Apply
+                </button>
+                <a href="{{ url_for('index') }}"
+                    class="w-1/3 bg-gray-700 hover:bg-gray-600 text-white text-center font-bold py-2 rounded-btn transition-colors text-sm flex items-center justify-center">
+                    Reset
+                </a>
+            </div>
         </form>
     </aside>
 
@@ -107,4 +114,75 @@
     </div>
 </div>
 <script src="{{ url_for('static', filename='js/script.js') }}" defer></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const minInput = document.getElementById('min_float');
+        const maxInput = document.getElementById('max_float');
+        const wearBtns = document.querySelectorAll('.wear-btn');
+        let firstClick = null;
+
+        function updateWearButtons() {
+            if (!minInput || !maxInput) return;
+            const minVal = parseFloat(minInput.value) || 0;
+            const maxVal = parseFloat(maxInput.value) || 1;
+
+            const isFullRange = (minVal <= 0.001 && maxVal >= 0.999);
+
+            wearBtns.forEach(btn => {
+                const btnMin = parseFloat(btn.dataset.min);
+                const btnMax = parseFloat(btn.dataset.max);
+                const activeClasses = btn.dataset.active.split(' ');
+
+                if (!isFullRange && btnMin >= minVal - 0.001 && btnMax <= maxVal + 0.001) {
+                    btn.classList.add(...activeClasses);
+                    btn.classList.remove('bg-gray-700', 'text-gray-300');
+                } else {
+                    btn.classList.remove(...activeClasses);
+                    btn.classList.add('bg-gray-700', 'text-gray-300');
+                }
+            });
+        }
+
+        wearBtns.forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const btnMin = parseFloat(btn.dataset.min);
+                const btnMax = parseFloat(btn.dataset.max);
+                const currentMin = parseFloat(minInput.value) || 0;
+                const currentMax = parseFloat(maxInput.value) || 1;
+                const isExactlyThisButton = Math.abs(currentMin - btnMin) < 0.001 && Math.abs(currentMax - btnMax) < 0.001;
+
+                if (isExactlyThisButton) {
+                    minInput.value = "0.00";
+                    maxInput.value = "1.00";
+                    firstClick = null;
+                }
+                else if (firstClick === null) {
+                    minInput.value = btnMin.toFixed(2);
+                    maxInput.value = btnMax.toFixed(2);
+                    firstClick = { min: btnMin, max: btnMax };
+                }
+                else {
+                    minInput.value = Math.min(firstClick.min, btnMin).toFixed(2);
+                    maxInput.value = Math.max(firstClick.max, btnMax).toFixed(2);
+                    firstClick = null;
+                }
+
+                updateWearButtons();
+            });
+        });
+
+        minInput.addEventListener('input', () => {
+            firstClick = null;
+            updateWearButtons();
+        });
+        maxInput.addEventListener('input', () => {
+            firstClick = null;
+            updateWearButtons();
+        });
+
+        updateWearButtons();
+    });
+</script>
+
 {% endblock %}

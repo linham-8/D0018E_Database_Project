@@ -49,6 +49,24 @@ document.addEventListener('DOMContentLoaded', () => {
       // Stores the ID globally for the add to cart button
       window.currentSelectedItemId = data.id;
 
+      const inCart = (data.incart === 'true');
+      const addToCartForm = document.getElementById('modalAddToCartForm');
+      const addToCartBtn = document.getElementById('modalAddToCartBtn');
+
+      if (addToCartForm && addToCartBtn) {
+        if (inCart) {
+          addToCartForm.action = "";
+          addToCartBtn.disabled = true;
+          addToCartBtn.textContent = "In Cart";
+          addToCartBtn.className = "w-full bg-gray-600 text-gray-400 py-2 rounded-btn font-bold cursor-not-allowed";
+        } else {
+          addToCartForm.action = '/add_to_cart/' + data.id;
+          addToCartBtn.disabled = false;
+          addToCartBtn.textContent = "Add to Cart";
+          addToCartBtn.className = "w-full bg-accent text-gray-900 py-2 rounded-btn font-bold hover:bg-accent-hover transition-colors";
+        }
+      }
+
       // 7. Show the modal
       modal.classList.remove('hidden');
       modal.classList.add('flex');
