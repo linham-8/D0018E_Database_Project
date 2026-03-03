@@ -1,24 +1,20 @@
 {% extends "base.html" %}
 
+{% from "macros.html" import display_flashed_messages with context %}
+
 {% block content %}
 <div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
     <div class="sm:mx-auto sm:w-full sm:max-w-sm">
-        <h2 class="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-white-900">
+        <h2 class="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-white">
             Sign in to your account
         </h2>
     </div>
 
     <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-        {% for category, message in messages %}
-        <div class="rounded-md bg-red-50 p-4 text-sm text-red-700">{{ message }}</div>
-        {% endfor %}
-        {% endif %}
-        {% endwith %}
+        <div class="max-w-sm mx-auto">{{ display_flashed_messages() }}</div>
         <form class="space-y-6" action="{{ url_for('login') }}" method="POST">
             <div>
-                <label for="login-id" class="block text-sm font-medium leading-6 text-white-900">Email or
+                <label for="login-id" class="block text-sm font-medium leading-6 text-white">Email or
                     username</label>
                 <div class="mt-2">
                     <input id="login-id" name="login-id" type="text" required
@@ -27,7 +23,7 @@
             </div>
 
             <div>
-                <label for="password" class="block text-sm font-medium leading-6 text-white-900">Password</label>
+                <label for="password" class="block text-sm font-medium leading-6 text-white">Password</label>
                 <div class="mt-2">
                     <input id="password" name="password" type="password" required
                         class="block w-full rounded-md border-0 py-2 px-3 text-gray-900 bg-white">
@@ -42,7 +38,7 @@
             </div>
         </form>
 
-        <p class="mt-10 text-center text-md text-white-500">
+        <p class="mt-10 text-center text-md text-white">
             Register
             <a href="{{ url_for('register') }}" class="font-semibold leading-6 text-indigo-600 hover:text-indigo-500">
                 here

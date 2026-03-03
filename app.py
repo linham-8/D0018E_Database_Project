@@ -4,7 +4,7 @@ from sqlalchemy import func
 from functools import wraps
 from extensions import db, app
 from models import Skin, User, UserInfo, Transaction
-
+import re
 
 WEAPON_CATEGORIES = {
     "Rifles": [
@@ -73,6 +73,15 @@ WEAPON_CATEGORIES = {
 @app.context_processor
 def inject_categories():
     return dict(weapon_categories=WEAPON_CATEGORIES)
+
+
+@app.context_processor
+def inject_flash_colors():
+    color_map = {
+        'success': 'bg-green-900/30 text-green-400 border-green-500/50',
+        'error': 'bg-red-900/30 text-red-400 border-red-500/50',
+    }
+    return dict(flash_colors=color_map)
 
 
 def url_for_args(endpoint, **values):
@@ -157,6 +166,51 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+
+def clean_form_data(key, default=None):
+    value = request.form.get(key, '').strip()
+    
+    if not value:
+        return default
+
+    if key in ('email', 'username', 'login-id'):
+        return value.lower()
+        
+    return value
+
+
+def validate_password(password, min_length=8):
+    errors = []
+
+    if len(password) < min_length:
+        errors.append(f'Password must be at least {min_length} characters long.')
+    if not re.search(r'[A-Z]', password):
+        errors.append('Password must contain at least one uppercase letter.')
+    if not re.search(r'[a-z]', password):
+        errors.append('Password must contain at least one lowercase letter.')
+    if not re.search(r'[0-9]', password):
+        errors.append('Password must contain at least one number.')
+    if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
+        errors.append('Password must contain at least one special character.')
+
+    return errors
+
+
+def validate_phone(phone):
+    errors = []
+
+    if not re.match(r'^[\d\s\+\-\(\)\.]+$', phone):
+        errors.append('Phone number contains invalid characters.')
+    
+    digits = re.sub(r'\D', '', phone)
+    if len(digits) < 7:
+        errors.append('Phone number is too short.')
+    if len(digits) > 15:
+        errors.append('Phone number is too long.')
+
+    return errors
+
+
 @app.route("/")
 def index():
     filters = {
@@ -203,60 +257,150 @@ def index():
 @app.route("/login", methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for)('index')
+        return redirect(url_for('index'))
     if request.method == 'POST':
-        login_id = request.form['login-id']
+        login_id = clean_form_data('login-id')
+
         user = User.query.filter_by(username=login_id).first()
         if not user:
-            email = UserInfo.query.filter_by(email=login_id).first()
-            if email:
-                user = email.user_account
-            else:
-                flash('Incorrect credentials', 'error')
-                return redirect(url_for('login'))
+            user_info = UserInfo.query.filter_by(email=login_id).first()
+            if user_info:
+                user = user_info.user_account
+
         if user and user.check_password(request.form['password']):
             login_user(user)
             return redirect(url_for('index'))
         else:
             flash('Incorrect credentials', 'error')
+            return redirect(url_for('login'))
+
     return render_template("login.html")
 
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
-        return redirect(url_for)('index')
+        return redirect(url_for('index'))
     if request.method == 'POST':
-        first_user = User.query.count() == 0
-        user = User(username=request.form['username'])
-        user.set_password(request.form['password'])
-        if first_user:
-            user.user_type = 'admin'
-        db.session.add(user)
-        db.session.flush()
+        try:
+            username = clean_form_data('username')
+            password = clean_form_data('password')
+            email = clean_form_data('email')
+            name = clean_form_data('name')
+            address = clean_form_data('address')
+            phone = clean_form_data('phone')
 
-        user_info = UserInfo(
-            user_account=user,
-            name=request.form['name'],
-            email=request.form['email'],
-            address=request.form['address'],
-            phone_number=request.form['phone'],
-        )
+            if not (username and password and email and name and address and phone):
+                flash('All fields are required', 'error')
+                return redirect(url_for('register'))
 
-        db.session.add(user_info)
-        db.session.commit()
-        return redirect(url_for('login'))
+            errors = []
+
+            errors.extend(validate_password(password))
+            errors.extend(validate_phone(phone))
+
+            if User.query.filter_by(username=username).first():
+                errors.append('Username already taken.')
+            if UserInfo.query.filter_by(email=email).first():
+                errors.append('Email already registered.')
+
+            if errors:
+                for error in errors:
+                    flash(error, 'error')
+                return redirect(url_for('register'))
+
+            first_user = User.query.count() == 0
+            user = User(username=username)
+            user.set_password(password)
+
+            if first_user:
+                user.user_type = 'admin'
+
+            db.session.add(user)
+            db.session.flush()
+
+            user_info = UserInfo(
+                user_account=user,
+                name=name,
+                email=email,
+                address=address,
+                phone_number=phone,
+            )
+            db.session.add(user_info)
+            db.session.commit()
+
+            return redirect(url_for('login'))
+
+        except Exception as e:
+            db.session.rollback()
+            flash('An unexpected error occurred. Please try again.', 'error')
+            print(f"Registration error: {e}")
+            return redirect(url_for('register'))
+
     return render_template("register.html")
 
 @app.route("/logout")
+@login_required
 def logout():
     logout_user()
-    return render_template("login.html")
+    return redirect(url_for('login'))
 
 @app.route("/user", methods=['GET', 'POST'])
 @login_required
 def user():
-    return render_template("user.html")
+    user_info = current_user.info
+    if request.method == 'POST':
+        try:
+            new_username = clean_form_data('username', current_user.username.lower())
+            new_email = clean_form_data('email', user_info.email.lower())
+            new_name = clean_form_data('name', user_info.name)
+            new_address = clean_form_data('address', user_info.address)
+            new_phone = clean_form_data('phone', user_info.phone_number)
+            new_password = clean_form_data('password')
+
+            if not (new_username and new_email and new_name and new_address and new_phone):
+                flash('All fields are required', 'error')
+                return redirect(url_for('user'))
+
+            errors = []
+
+            if new_password:
+                errors.extend(validate_password(new_password))
+            if new_phone != user_info.phone_number:
+                errors.extend(validate_phone(new_phone))
+            if new_username != current_user.username:
+                if User.query.filter_by(username=new_username).first():
+                    errors.append('Username already taken.')
+            if new_email != user_info.email:
+                if UserInfo.query.filter_by(email=new_email).first():
+                    errors.append('Email already in use.')
+
+            if errors:
+                for error in errors:
+                    flash(error, 'error')
+                return redirect(url_for('user'))
+
+            current_user.username = new_username
+            user_info.name = new_name
+            user_info.email = new_email
+            user_info.address = new_address
+            user_info.phone_number = new_phone
+
+            if new_password:
+                current_user.set_password(new_password)
+
+            db.session.commit()
+
+            flash('Profile updated successfully', 'success')
+            return redirect(url_for('user'))
+
+        except Exception as e:
+            db.session.rollback()
+            flash('An unexpected error occurred. Please try again.', 'error')
+            print(f"Update error: {e}")
+            return redirect(url_for('user'))
+
+    return render_template('user.html', user=current_user, info=user_info)
 
 @app.route("/admin", methods=['GET', 'POST'])
 @admin_required
