@@ -1,10 +1,10 @@
 {% extends "base.html" %}
-{% from "macros.html" import group_card, skin_card, pagination_widget with context %}
+{% from "macros.html" import group_card, skin_card, pagination_widget, display_flashed_messages with context %}
 {% block content %}
 <div class="mx-auto max-w-7xl p-6 flex flex-col md:flex-row gap-6">
 
     <aside class="w-full md:w-64 shrink-0 sticky top-32 self-start z-10">
-
+        <div class="max-w-sm mx-auto">{{ display_flashed_messages() }}</div>
         <form id="filterForm" action="/" method="GET"
             class="bg-gray-800 p-4 rounded-card border border-gray-700 space-y-6 max-h-[calc(100vh-9rem)] overflow-y-auto">
 
