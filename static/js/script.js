@@ -49,22 +49,58 @@ document.addEventListener('DOMContentLoaded', () => {
       // Stores the ID globally for the add to cart button
       window.currentSelectedItemId = data.id;
 
-      const inCart = (data.incart === 'true');
+      const inCart = data.incart === 'true';
       const addToCartForm = document.getElementById('modalAddToCartForm');
       const addToCartBtn = document.getElementById('modalAddToCartBtn');
+      const submitCommentBtn = document.getElementById('submitCommentBtn');
+      const commentsList = document.getElementById('modalCommentsList');
 
       if (addToCartForm && addToCartBtn) {
         if (inCart) {
-          addToCartForm.action = "";
+          addToCartForm.action = '';
           addToCartBtn.disabled = true;
-          addToCartBtn.textContent = "In Cart";
-          addToCartBtn.className = "w-full bg-gray-600 text-gray-400 py-2 rounded-btn font-bold cursor-not-allowed";
+          addToCartBtn.textContent = 'In Cart';
+          addToCartBtn.className =
+            'w-full bg-gray-600 text-gray-400 py-2 rounded-btn font-bold cursor-not-allowed';
         } else {
           addToCartForm.action = '/add_to_cart/' + data.id;
           addToCartBtn.disabled = false;
-          addToCartBtn.textContent = "Add to Cart";
-          addToCartBtn.className = "w-full bg-accent text-gray-900 py-2 rounded-btn font-bold hover:bg-accent-hover transition-colors";
+          addToCartBtn.textContent = 'Add to Cart';
+          addToCartBtn.className =
+            'w-full bg-accent text-gray-900 py-2 rounded-btn font-bold hover:bg-accent-hover transition-colors';
         }
+      }
+
+      // Add comment logic
+      if (submitCommentBtn) {
+        submitCommentBtn.addEventListener('click', () => {
+          const input = document.getElementById('newCommentInput');
+          if (!input) return;
+
+          const text = input.value.trim();
+          const itemId = window.currentSelectedItemId;
+
+          if (text === '') return;
+
+          console.log(`Submitting review for item ${itemId}: ${text}`);
+        });
+      }
+
+      // Delete comment logic
+      if (commentsList) {
+        commentsList.addEventListener('click', e => {
+          const delBtn = e.target.closest('.js-delete-comment');
+
+          if (delBtn) {
+            const commentBox = delBtn.closest('.js-comment-box');
+            const commentId = commentBox.dataset.commentId;
+
+            if (confirm('Are you sure you want to delete this comment?')) {
+              console.log(`Deleting comment ID: ${commentId}`);
+              commentBox.remove();
+            }
+          }
+        });
       }
 
       // 7. Show the modal
@@ -87,50 +123,5 @@ window.closeModal = function () {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     window.closeModal();
-  }
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-  const addToCartBtn = document.getElementById('addToCartBtn');
-  const submitCommentBtn = document.getElementById('submitCommentBtn');
-  const commentsList = document.getElementById('modalCommentsList');
-  // Add to cart logic
-  if (addToCartBtn) {
-    addToCartBtn.addEventListener('click', () => {
-      const itemId = window.currentSelectedItemId;
-      if (!itemId) return;
-
-      console.log(`Adding ${itemId} to cart...`);
-    });
-  }
-  // Add comment logic
-  if (submitCommentBtn) {
-    submitCommentBtn.addEventListener('click', () => {
-      const input = document.getElementById('newCommentInput');
-      if (!input) return;
-
-      const text = input.value.trim();
-      const itemId = window.currentSelectedItemId;
-
-      if (text === '') return;
-
-      console.log(`Submitting review for item ${itemId}: ${text}`);
-    });
-  }
-  // Delete comment logic
-  if (commentsList) {
-    commentsList.addEventListener('click', e => {
-      const delBtn = e.target.closest('.js-delete-comment');
-
-      if (delBtn) {
-        const commentBox = delBtn.closest('.js-comment-box');
-        const commentId = commentBox.dataset.commentId;
-
-        if (confirm('Are you sure you want to delete this comment?')) {
-          console.log(`Deleting comment ID: ${commentId}`);
-          commentBox.remove();
-        }
-      }
-    });
   }
 });
