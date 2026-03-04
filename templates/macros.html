@@ -42,9 +42,11 @@
     data-id="{{ skin.id }}" data-name="{{ skin.name}}" data-price="{{ skin.price }}" data-wear="{{ skin.wear_name }}"
     data-image="{{ skin.image }}" data-stattrak="{{ skin.is_stattrak }}" data-float="{{ skin.float_value }}"
     data-seed="{{ skin.paint_seed }}" data-rarity="{{ skin.rarity }}"
-    data-pattern="{% if skin.pattern %}{{ skin.pattern.name }}{% else %}None{% endif %}">
+    data-pattern="{% if skin.pattern %}{{ skin.pattern.name }}{% else %}None{% endif %}"
+    data-incart="{% if skin.id in cart_skin_ids %}true{% else %}false{% endif %}">
     <div class="absolute top-0 left-0 right-0 h-1 rounded-t-card opacity-80 {{ get_rarity_class(skin.rarity|string) }}">
     </div>
+
     <div class="grow flex items-center justify-center border-b border-gray-700 mb-2 overflow-hidden relative">
         {% if skin.image %}
         <img src="{{ skin.image }}" alt="{{ skin.name }}"
@@ -53,16 +55,33 @@
         <span class="text-gray-600 font-bold text-xs">No Image</span>
         {% endif %}
     </div>
+
     <div>
         <h3 class="text-xs font-bold truncate text-gray-200" title="{{ skin.name }}">{{ skin.name }}</h3>
         <div class="flex justify-between items-end mt-1">
-            <span class="text-[10px] text-gray-400">{{ skin.wear_name }}</span>
-            <div class="text-right">
+            <div class="flex flex-col">
+                <span class="text-[10px] text-gray-400">{{ skin.wear_name }}</span>
                 {% if skin.is_stattrak %}
-                <span class="text-[9px] text-orange-500 font-bold block leading-none mb-1">StatTrak™</span>
+                <span class="text-[9px] text-orange-500 font-bold block leading-none">StatTrak™</span>
                 {% endif %}
                 <span class="text-sm font-bold text-green-400">{{ skin.price }}€</span>
             </div>
+
+            {% if current_user.is_authenticated %}
+            {% if skin.id in cart_skin_ids %}
+            <button disabled
+                class="bg-gray-600 text-gray-400 font-bold py-1 px-3 rounded-btn text-[10px] cursor-not-allowed">
+                In Cart
+            </button>
+            {% else %}
+            <form action="{{ url_for('add_to_cart', skin_id=skin.id) }}" method="POST">
+                <button type="submit" onclick="event.stopPropagation()"
+                    class="bg-accent hover:bg-accent-hover text-gray-900 font-bold py-1 px-3 rounded-btn text-[10px] transition-colors">
+                    Add
+                </button>
+            </form>
+            {% endif %}
+            {% endif %}
         </div>
     </div>
 </div>
