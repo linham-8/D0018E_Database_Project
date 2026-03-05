@@ -172,26 +172,40 @@ document.addEventListener('DOMContentLoaded', () => {
             '<p class="text-red-500 italic py-4">Error loading reviews.</p>';
         });
 
-      // Star rating logic
+      // Starr rating logic
       const stars = document.querySelectorAll('.js-star');
       const hiddenRatingInput = document.getElementById('hiddenRatingInput');
 
       if (stars && hiddenRatingInput) {
         stars.forEach(star => {
           star.addEventListener('click', e => {
-            const currentRating = parseInt(e.currentTarget.dataset.value);
-            hiddenRatingInput.value = currentRating; // Save for Python!
+            const clickedRating = parseInt(e.currentTarget.dataset.value);
+            const currentSavedRating = parseInt(hiddenRatingInput.value);
 
-            stars.forEach(s => {
-              const starVal = parseInt(s.dataset.value);
-              if (starVal <= currentRating) {
-                s.classList.remove('text-gray-400');
-                s.classList.add('text-yellow-400');
-              } else {
+            // TOGGLE CHECK: Did they click the exact same star that is currently set?
+            if (clickedRating === currentSavedRating) {
+              // Yes -> DESELECT ALL
+              hiddenRatingInput.value = 0; // Reset to none for Python
+
+              stars.forEach(s => {
                 s.classList.remove('text-yellow-400');
                 s.classList.add('text-gray-400');
-              }
-            });
+              });
+            } else {
+              // No -> SELECT NORMALLY
+              hiddenRatingInput.value = clickedRating; // Save for Python!
+
+              stars.forEach(s => {
+                const starVal = parseInt(s.dataset.value);
+                if (starVal <= clickedRating) {
+                  s.classList.remove('text-gray-400');
+                  s.classList.add('text-yellow-400');
+                } else {
+                  s.classList.remove('text-yellow-400');
+                  s.classList.add('text-gray-400');
+                }
+              });
+            }
           });
         });
       }
