@@ -22,9 +22,9 @@ class Skin(db.Model):
     review = db.relationship('Comment', backref='skin_item', lazy=True)
 
 class User(UserMixin, db.Model):
-    __tablename__ = 'users'
+    __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
-    user_type = db.Column(db.String(16), default='customer')
+    user_type = db.Column(db.String(16), default="customer")
     username = db.Column(db.String(64), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
     info = db.relationship('UserInfo', backref='user_account', uselist=False, cascade='all, delete-orphan')
@@ -40,6 +40,7 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
+
 class UserInfo(db.Model):
     __tablename__ = 'user_info'
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), primary_key=True)
@@ -48,21 +49,24 @@ class UserInfo(db.Model):
     phone_number = db.Column(db.String(32))
     address = db.Column(db.String(128))
 
+
 class Transaction(db.Model):
-    __tablename__ = 'transactions'
+    __tablename__ = "transactions"
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'), nullable=True)
     skin_id = db.Column(db.Integer, db.ForeignKey('skins.id', ondelete='SET NULL'), nullable=True)
     transaction_price = db.Column(db.Float, nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.now)
 
+
 class CartItem(db.Model):
-    __tablename__ = 'cart_items'
+    __tablename__ = "cart_items"
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     skin_id = db.Column(db.Integer, db.ForeignKey('skins.id', ondelete='CASCADE'), nullable=False)
     added_at = db.Column(db.DateTime, default=datetime.now)
-    skin = db.relationship('Skin')
+    skin = db.relationship("Skin")
+
 
 class Comment(db.Model):
   __tablename__ = 'comments'
