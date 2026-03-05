@@ -1,11 +1,7 @@
 from datetime import datetime
-
 from flask_login import UserMixin
-from sqlalchemy.orm import backref
-from werkzeug.security import check_password_hash, generate_password_hash
-
+from werkzeug.security import generate_password_hash, check_password_hash
 from extensions import db, login
-
 
 class Skin(db.Model):
     __tablename__ = "skins"
@@ -22,7 +18,6 @@ class Skin(db.Model):
     paint_seed = db.Column(db.Integer)
     is_stattrak = db.Column(db.Boolean, default=False)
     owner_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
-    review = db.relationship('Comment', backref='skin_item', lazy=True)
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -35,7 +30,6 @@ class User(UserMixin, db.Model):
     balance = db.Column(db.Float, default=0.0)
     owned_skins = db.relationship('Skin', backref='owner', lazy=True)
     cart_items = db.relationship('CartItem', backref='user', lazy=True)
-    review = db.relationship('Comment', backref='author', lazy=True)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -66,16 +60,6 @@ class CartItem(db.Model):
     skin_id = db.Column(db.Integer, db.ForeignKey('skins.id'), nullable=False)
     added_at = db.Column(db.DateTime, default=datetime.now)
     skin = db.relationship('Skin')
-
-class Comment(db.Model):
-  __tablename__ = 'comments'
-  id = db.Column(db.Integer, primary_key=True)
-  skin_id = db.Column(db.Integer, db.ForeignKey('skins.id'), nullable=False)
-  user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-  user_name = db.Column(db.String(16), nullable=False)
-  timestamp = db.Column(db.DateTime, default=datetime.now)
-  rating = db.Column(db.Integer, nullable=True)
-  comment_text = db.Column(db.String(16), nullable=True)
 
 @login.user_loader
 def load_user(user_id):

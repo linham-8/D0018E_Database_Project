@@ -1,10 +1,9 @@
-from flask import flash, jsonify, redirect, render_template, request, url_for
-from flask_login import current_user, login_required, login_user, logout_user
+from flask import render_template, request, url_for, redirect, flash
+from flask_login import login_user, logout_user, login_required, current_user
 from sqlalchemy import func
-from sqlalchemy.util.langhelpers import methods_equivalent
+from extensions import db, app
+from models import Skin, User, UserInfo, Transaction, CartItem
 
-from extensions import app, db
-from models import CartItem, Comment, Skin, Transaction, User, UserInfo
 
 WEAPON_CATEGORIES = {
     "Rifles": [
@@ -337,85 +336,5 @@ def cart():
 
     return render_template("cart.html", cart_items=cart_items, total_price=total_price)
 
-@app.route('/add_comment/<int:skin_id>', methods=['POST'])
-@login_required
-def add_comment(skin_id):
-    # Retrieve the skin to make sure it exists (like in your cart code)
-    skin = Skin.query.get_or_404(skin_id)
-
-    if skin.owner_id is not None:
-      flash(message="You cannot leave a review on an item that is already sold.", category="error")
-      return redirect(location=request.referrer or url_for('index'))
-
-    # Read data from the standard HTML form
-    text = request.form.get('comment_text', '').strip()
-    rating_str = request.form.get('rating', '0')
-    rating = int(rating_str) if rating_str.isdigit() else 0
-
-    if text == '' and rating == 0:
-        flash(message="Please provide a star rating or write a comment!", category="error")
-        return redirect(location=request.referrer or url_for('index'))
-
-    # Create the new comment
-    new_comment = Comment(
-        skin_id=skin_id,
-        user_id=current_user.id,
-        user_name=current_user.username,
-        comment_text=text if text != '' else None,
-        rating=rating if rating > 0 else None,
-        timestamp=datetime.now()
-    )
-
-    db.session.add(new_comment)
-    db.session.commit()
-
-    flash(message="Review added successfully!", category="success")
-    return redirect(location=request.referrer or url_for('index'))
-
-@app.route('/delete_comment/<int:comment_id>', methods=['POST'])
-@login_required
-def delete_comment(comment_id):
-    comment = Comment.query.get_or_404(comment_id)
-
-    # SECURITY CHECK: Are they the owner OR an admin?
-    is_owner = (comment.user_id == current_user.id)
-
-    # getattr safely checks if the column exists so it doesn't crash if you haven't added it yet
-    is_admin = getattr(current_user, 'is_admin', False)
-
-    if not is_owner and not is_admin:
-        flash(message="Unauthorized! You cannot delete someone else's review.", category="error")
-        return redirect(location=request.referrer or url_for('index'))
-
-    # Delete it
-    db.session.delete(comment)
-    db.session.commit()
-
-    flash(message="Review deleted successfully.", category="success")
-    return redirect(location=request.referrer or url_for('index'))
-
-@app.route('/api/comments/<int:skin_id>', methods=['GET'])
-def get_comments(skin_id):
-    comments = Comment.query.filter_by(skin_id=skin_id).order_by(Comment.timestamp.desc()).all()
-
-    comments_data = []
-    for comment in comments:
-        # Determine if the current user has permission to see the delete button
-        can_delete = False
-        if current_user.is_authenticated:
-            is_owner = (current_user.id == comment.user_id)
-            is_admin = getattr(current_user, 'is_admin', False)
-
-            if is_owner or is_admin:
-                can_delete = True
-
-        comments_data.append({
-            "id": comment.id,
-            "author": comment.user_name,
-            "text": comment.comment_text or "",
-            "rating": comment.rating or 0,
-            "can_delete": can_delete,  # We changed this from 'is_mine' to 'can_delete'
-            "date": comment.timestamp.strftime("%Y-%m-%d")
-        })
-
-    return jsonify({"status": "success", "comments": comments_data}), 200
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)
