@@ -601,7 +601,7 @@ def get_comments(skin_id):
         can_delete = False
         if current_user.is_authenticated:
             is_owner = (comment.user_id == current_user.id)
-            is_admin = getattr(current_user, 'is_admin', False)
+            is_admin = (current_user.user_type == 'admin')
             if is_owner or is_admin:
                 can_delete = True
 
@@ -654,7 +654,7 @@ def delete_comment(comment_id):
     comment = Comment.query.get_or_404(comment_id)
 
     is_owner = (comment.user_id == current_user.id)
-    is_admin = getattr(current_user, 'is_admin', False)
+    is_admin = (current_user.user_type == 'admin')
 
     if not is_owner and not is_admin:
         flash(message="Unauthorized! You cannot delete someone else's review.", category="error")
