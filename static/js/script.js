@@ -103,6 +103,99 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
 
+      if (commentsList) {
+        commentsList.innerHTML =
+          '<p class="text-gray-500 italic text-center py-4">Loading reviews...</p>';
+      }
+
+      const inputField = document.getElementById('newCommentInput');
+      if (inputField) inputField.value = '';
+
+      // Update the Add Comment form URL to point to the correct skin
+      const form = document.getElementById('commentForm');
+      if (form) form.action = `/add_comment/${data.id}`;
+
+      // Looks for the reviews for this specific skin
+      fetch(`/api/comments/${data.id}`)
+        .then(response => response.json())
+        .then(result => {
+          if (result.status === 'success') {
+            const comments = result.comments;
+
+            if (comments.length === 0) {
+              commentsList.innerHTML =
+                '<p class="text-gray-500 italic text-center py-4">No reviews yet. Be the first!</p>';
+              return;
+            }
+
+            let html = '';
+            comments.forEach(c => {
+              // Generate stars
+              let starsVisual = '';
+              if (c.rating > 0) {
+                starsVisual = `<span class="text-yellow-400 text-xs ml-2">`;
+                for (let i = 0; i < c.rating; i++) starsVisual += '★';
+                starsVisual += `</span>`;
+              }
+
+              let deleteBtn = '';
+              if (c.can_delete) {
+                // Checks if owner OR admin
+                deleteBtn = `
+                                        <form method="POST" action="/delete_comment/${c.id}" class="absolute top-2 right-2">
+                                            <button type="submit" class="text-gray-500 hover:text-red-500 transition-colors cursor-pointer" title="Delete Review">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        </form>`;
+              }
+
+              // Build the comment box
+              html += `
+                                    <div class="bg-gray-900 p-3 rounded-card border border-gray-700 relative js-comment-box" data-comment-id="${c.id}">
+                                        <span class="font-bold text-accent text-xs">${c.author}</span>
+                                        <span class="text-gray-500 text-xs ml-2">${c.date}</span>
+                                        ${starsVisual}
+                                        ${deleteBtn}
+                                        <p class="mt-1">${c.text}</p>
+                                    </div>
+                                    `;
+            });
+
+            commentsList.innerHTML = html;
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching comments:', error);
+          commentsList.innerHTML =
+            '<p class="text-red-500 italic py-4">Error loading reviews.</p>';
+        });
+
+      // Star rating logic
+      const stars = document.querySelectorAll('.js-star');
+      const hiddenRatingInput = document.getElementById('hiddenRatingInput');
+
+      if (stars && hiddenRatingInput) {
+        stars.forEach(star => {
+          star.addEventListener('click', e => {
+            const currentRating = parseInt(e.currentTarget.dataset.value);
+            hiddenRatingInput.value = currentRating; // Save for Python!
+
+            stars.forEach(s => {
+              const starVal = parseInt(s.dataset.value);
+              if (starVal <= currentRating) {
+                s.classList.remove('text-gray-400');
+                s.classList.add('text-yellow-400');
+              } else {
+                s.classList.remove('text-yellow-400');
+                s.classList.add('text-gray-400');
+              }
+            });
+          });
+        });
+      }
+
       // 7. Show the modal
       modal.classList.remove('hidden');
       modal.classList.add('flex');

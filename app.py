@@ -1,11 +1,22 @@
-from flask import render_template, request, url_for, redirect, flash, abort, session
-from flask_login import login_user, logout_user, login_required, current_user
-from sqlalchemy import func
-from functools import wraps
-from extensions import db, app
 import re
-from models import Skin, User, UserInfo, Transaction, CartItem
+from datetime import datetime
+from functools import wraps
 
+from flask import (
+    abort,
+    flash,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
+from flask_login import current_user, login_required, login_user, logout_user
+from sqlalchemy import func
+
+from extensions import app, db
+from models import CartItem, Comment, Skin, Transaction, User, UserInfo
 
 WEAPON_CATEGORIES = {
     "Rifles": [
@@ -185,13 +196,13 @@ def admin_required(f):
 
 def clean_form_data(key, default=None):
     value = request.form.get(key, '').strip()
-    
+
     if not value:
         return default
 
     if key in ('email', 'username', 'login-id'):
         return value.lower()
-        
+
     return value
 
 
@@ -217,7 +228,7 @@ def validate_phone(phone):
 
     if not re.match(r'^[\d\s\+\-\(\)\.]+$', phone):
         errors.append('Phone number contains invalid characters.')
-    
+
     digits = re.sub(r'\D', '', phone)
     if len(digits) < 7:
         errors.append('Phone number is too short.')
@@ -529,12 +540,12 @@ def admin_edit_user(user_id):
 def admin_delete_user(user_id):
     if user_id == current_user.id:
         flash('Cannot delete admin.', 'error')
-        return redirect(url_for('admin')) 
+        return redirect(url_for('admin'))
     user = User.query.get_or_404(user_id)
     try:
         db.session.delete(user)
         db.session.commit()
-        
+
         flash(f'User {user.username} deleted successfully.', 'success')
     except Exception as e:
         db.session.rollback()
@@ -578,6 +589,82 @@ def cart():
             return redirect(url_for('cart'))
 
     return render_template("cart.html", cart_items=cart_items, total_price=total_price)
+
+# Fetch comments logic (Used by JavaScript to load the modal)
+@app.route('/api/comments/<int:skin_id>', methods=['GET'])
+def get_comments(skin_id):
+    comments = Comment.query.filter_by(skin_id=skin_id).order_by(Comment.timestamp.desc()).all()
+
+    comments_data = []
+    for comment in comments:
+        # Check if the user is allowed to delete this (owner or admin)
+        can_delete = False
+        if current_user.is_authenticated:
+            is_owner = (comment.user_id == current_user.id)
+            is_admin = getattr(current_user, 'is_admin', False)
+            if is_owner or is_admin:
+                can_delete = True
+
+        comments_data.append({
+            "id": comment.id,
+            "author": comment.user_name,
+            "text": comment.comment_text or "",
+            "rating": comment.rating or 0,
+            "can_delete": can_delete,
+            "date": comment.timestamp.strftime("%Y-%m-%d")
+        })
+    return jsonify({"status": "success", "comments": comments_data}), 200
+
+# Add comment logic
+@app.route('/add_comment/<int:skin_id>', methods=['POST'])
+@login_required
+def add_comment(skin_id):
+    skin = Skin.query.get_or_404(skin_id)
+
+    # Prevent reviewing sold items
+    if skin.owner_id is not None:
+        flash(message="You cannot leave a review on an item that is already sold.", category="error")
+        return redirect(location=request.referrer or url_for('index'))
+
+    text = request.form.get('comment_text', '').strip()
+    rating = int(request.form.get('rating', 0))
+
+    if text == '' and rating == 0:
+        flash(message="Please provide a star rating or write a comment!", category="error")
+        return redirect(location=request.referrer or url_for('index'))
+
+    new_comment = Comment(
+        skin_id=skin_id,
+        user_id=current_user.id,
+        user_name=current_user.username,
+        comment_text=text if text != '' else None,
+        rating=rating if rating > 0 else None,
+        timestamp=datetime.now()
+    )
+    db.session.add(new_comment)
+    db.session.commit()
+
+    flash(message="Review added successfully!", category="success")
+    return redirect(location=request.referrer or url_for('index'))
+
+# Delete comment logic
+@app.route('/delete_comment/<int:comment_id>', methods=['POST'])
+@login_required
+def delete_comment(comment_id):
+    comment = Comment.query.get_or_404(comment_id)
+
+    is_owner = (comment.user_id == current_user.id)
+    is_admin = getattr(current_user, 'is_admin', False)
+
+    if not is_owner and not is_admin:
+        flash(message="Unauthorized! You cannot delete someone else's review.", category="error")
+        return redirect(location=request.referrer or url_for('index'))
+
+    db.session.delete(comment)
+    db.session.commit()
+
+    flash(message="Review deleted successfully.", category="success")
+    return redirect(location=request.referrer or url_for('index'))
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
