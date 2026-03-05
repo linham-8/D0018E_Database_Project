@@ -70,6 +70,9 @@ document.addEventListener('DOMContentLoaded', () => {
       // 7. Show the modal
       modal.classList.remove('hidden');
       modal.classList.add('flex');
+
+      const sidebar = document.getElementById('filterSidebar');
+      if (sidebar) sidebar.style.opacity = '0';
     }
   });
 });
@@ -80,7 +83,11 @@ window.closeModal = function () {
   if (modal) {
     modal.classList.add('hidden');
     modal.classList.remove('flex');
+
+    const sidebar = document.getElementById('filterSidebar');
+    if (sidebar) sidebar.style.opacity = '1';
   }
+
 };
 
 // Close modal on Escape key press

@@ -73,10 +73,12 @@ WEAPON_CATEGORIES = {
 def inject_categories():
     return dict(weapon_categories=WEAPON_CATEGORIES)
 
+
 @app.context_processor
 def inject_cart():
     if current_user.is_authenticated:
         from models import CartItem
+
         cart_items = CartItem.query.filter_by(user_id=current_user.id).all()
         cart_skin_ids = [item.skin_id for item in cart_items]
     else:
@@ -206,65 +208,69 @@ def index():
     return render_template("index.html", **context)
 
 
-@app.route("/login", methods=['GET', 'POST'])
+@app.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('index'))
-    if request.method == 'POST':
-        login_id = request.form['login-id']
+        return redirect(url_for("index"))
+    if request.method == "POST":
+        login_id = request.form["login-id"]
         user = User.query.filter_by(username=login_id).first()
         if not user:
             email = UserInfo.query.filter_by(email=login_id).first()
             if email:
                 user = email.user_account
             else:
-                flash('Incorrect credentials', 'error')
-                return redirect(url_for('login'))
-        if user and user.check_password(request.form['password']):
+                flash("Incorrect credentials", "error")
+                return redirect(url_for("login"))
+        if user and user.check_password(request.form["password"]):
             login_user(user)
-            return redirect(url_for('index'))
+            return redirect(url_for("index"))
         else:
-            flash('Incorrect credentials', 'error')
+            flash("Incorrect credentials", "error")
     return render_template("login.html")
 
 
-@app.route("/register", methods=['GET', 'POST'])
+@app.route("/register", methods=["GET", "POST"])
 def register():
     if current_user.is_authenticated:
-        return redirect(url_for('index'))
-    if request.method == 'POST':
-        user = User(username=request.form['username'])
-        user.set_password(request.form['password'])
+        return redirect(url_for("index"))
+    if request.method == "POST":
+        user = User(username=request.form["username"])
+        user.set_password(request.form["password"])
         db.session.add(user)
         db.session.flush()
 
         user_info = UserInfo(
             user_account=user,
-            name=request.form['name'],
-            email=request.form['email'],
-            address=request.form['address'],
-            phone_number=request.form['phone'],
+            name=request.form["name"],
+            email=request.form["email"],
+            address=request.form["address"],
+            phone_number=request.form["phone"],
         )
 
         db.session.add(user_info)
         db.session.commit()
-        return redirect(url_for('login'))
+        return redirect(url_for("login"))
     return render_template("register.html")
+
 
 @app.route("/logout")
 def logout():
     logout_user()
     return render_template("login.html")
 
-@app.route("/add_to_cart/<int:skin_id>", methods=['POST'])
+
+@app.route("/add_to_cart/<int:skin_id>", methods=["POST"])
 @login_required
 def add_to_cart(skin_id):
     skin = Skin.query.get_or_404(skin_id)
     if skin.owner_id is not None:
         flash("This item is already sold.", "error")
-        return redirect(request.referrer or url_for('index'))
+        return redirect(request.referrer or url_for("index"))
 
-    existing = CartItem.query.filter_by(user_id=current_user.id, skin_id=skin_id).first()
+    existing = CartItem.query.filter_by(
+        user_id=current_user.id, skin_id=skin_id
+    ).first()
     if not existing:
         new_item = CartItem(user_id=current_user.id, skin_id=skin_id)
         db.session.add(new_item)
@@ -272,44 +278,51 @@ def add_to_cart(skin_id):
         flash("Added to cart!", "success")
     else:
         flash("Item is already in your cart.", "info")
-    return redirect(request.referrer or url_for('index'))
+    return redirect(request.referrer or url_for("index"))
 
-@app.route("/remove_from_cart/<int:item_id>", methods=['POST'])
+
+@app.route("/remove_from_cart/<int:item_id>", methods=["POST"])
 @login_required
 def remove_from_cart(item_id):
     item = CartItem.query.get_or_404(item_id)
     if item.user_id == current_user.id:
         db.session.delete(item)
         db.session.commit()
-    return redirect(url_for('cart'))
+    return redirect(url_for("cart"))
 
-@app.route("/user", methods=['GET', 'POST'])
+
+@app.route("/user", methods=["GET", "POST"])
 @login_required
 def user():
-    if request.method == 'POST':
-        action = request.form.get('action')
-        if action == 'deposit':
-            amount = float(request.form.get('amount', 0))
+    if request.method == "POST":
+        action = request.form.get("action")
+        if action == "deposit":
+            amount = float(request.form.get("amount", 0))
             if amount > 0:
                 current_user.balance += amount
                 db.session.commit()
                 flash(f"Successfully deposited ${amount:.2f}!", "success")
-            return redirect(url_for('user'))
+            return redirect(url_for("user"))
 
     owned_skins = Skin.query.filter_by(owner_id=current_user.id).all()
     return render_template("user.html", owned_skins=owned_skins)
 
-@app.route("/cart", methods=['GET', 'POST'])
+
+@app.route("/cart", methods=["GET", "POST"])
 @login_required
 def cart():
     cart_items = CartItem.query.filter_by(user_id=current_user.id).all()
 
-    total_price = sum(item.skin.price for item in cart_items if item.skin.owner_id is None)
+    total_price = sum(
+        item.skin.price for item in cart_items if item.skin.owner_id is None
+    )
 
-    if request.method == 'POST':
+    if request.method == "POST":
         if current_user.balance < total_price:
-            flash("Insufficient balance! Please deposit funds on your profile.", "error")
-            return redirect(url_for('cart'))
+            flash(
+                "Insufficient balance! Please deposit funds on your profile.", "error"
+            )
+            return redirect(url_for("cart"))
 
         purchased_any = False
         for item in cart_items:
@@ -317,7 +330,11 @@ def cart():
                 item.skin.owner_id = current_user.id
                 current_user.balance -= item.skin.price
 
-                tx = Transaction(user_id=current_user.id, skin_id=item.skin.id, transaction_price=item.skin.price)
+                tx = Transaction(
+                    user_id=current_user.id,
+                    skin_id=item.skin.id,
+                    transaction_price=item.skin.price,
+                )
                 db.session.add(tx)
 
                 db.session.delete(item)
@@ -328,13 +345,14 @@ def cart():
         if purchased_any:
             db.session.commit()
             flash("Purchase successful! Items added to your inventory.", "success")
-            return redirect(url_for('user'))
+            return redirect(url_for("user"))
         else:
             db.session.commit()
             flash("Some items in your cart were already sold.", "error")
-            return redirect(url_for('cart'))
+            return redirect(url_for("cart"))
 
     return render_template("cart.html", cart_items=cart_items, total_price=total_price)
 
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5005, debug=True)

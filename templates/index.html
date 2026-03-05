@@ -4,25 +4,11 @@
 <div class="mx-auto max-w-7xl p-6 flex flex-col md:flex-row gap-6">
 
     <aside class="w-full md:w-64 shrink-0 sticky top-32 self-start z-10">
+        <aside id="filterSidebar"
+            class="w-full md:w-64 shrink-0 sticky top-32 self-start z-10 transition-opacity duration-200"></aside>
 
         <form id="filterForm" action="/" method="GET"
             class="bg-gray-800 p-4 rounded-card border border-gray-700 space-y-6 max-h-[calc(100vh-9rem)] overflow-y-auto">
-
-            <div>
-                <label class="block text-xs font-bold text-gray-500 mb-2 uppercase">Sort By</label>
-                <select name="sort"
-                    class="w-full bg-gray-900 border border-gray-600 rounded-btn p-2 text-sm text-gray-200 focus:border-accent outline-none">
-                    <option value="default" {% if current_sort=='default' %}selected{% endif %}>Default</option>
-                    <option value="price_asc" {% if current_sort=='price_asc' %}selected{% endif %}>Price: Low to High
-                    </option>
-                    <option value="price_desc" {% if current_sort=='price_desc' %}selected{% endif %}>Price: High to Low
-                    </option>
-                    <option value="float_asc" {% if current_sort=='float_asc' %}selected{% endif %}>Float: Low to High
-                    </option>
-                    <option value="float_desc" {% if current_sort=='float_desc' %}selected{% endif %}>Float: High to Low
-                    </option>
-                </select>
-            </div>
 
             <div>
                 <label class="block text-xs font-bold text-gray-500 mb-2 uppercase">Doppler Phase</label>
