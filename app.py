@@ -1,4 +1,4 @@
-from flask import render_template, request, url_for, redirect, flash, abort
+from flask import render_template, request, url_for, redirect, flash, abort, session
 from flask_login import login_user, logout_user, login_required, current_user
 from sqlalchemy import func
 from functools import wraps
@@ -386,6 +386,7 @@ def remove_from_cart(item_id):
     if item.user_id == current_user.id:
         db.session.delete(item)
         db.session.commit()
+        flash("Removed from cart!", "success")
     return redirect(url_for('cart'))
 
 @app.route("/user", methods=['GET', 'POST'])
@@ -393,6 +394,14 @@ def remove_from_cart(item_id):
 def user():
     user_info = current_user.info
     if request.method == 'POST':
+        action = request.form.get('action')
+        if action == 'deposit':
+            amount = float(request.form.get('amount', 0))
+            if amount > 0:
+                current_user.balance += amount
+                db.session.commit()
+                flash(f"Successfully deposited ${amount:.2f}!", "success")
+            return redirect(url_for('user'))
         try:
             new_username = clean_form_data('username', current_user.username.lower())
             new_email = clean_form_data('email', user_info.email.lower())
@@ -443,24 +452,95 @@ def user():
             print(f"Update error: {e}")
             return redirect(url_for('user'))
 
-    return render_template('user.html', user=current_user, info=user_info)
+    owned_skins = Skin.query.filter_by(owner_id=current_user.id).all()
+    return render_template('user.html', owned_skins=owned_skins, user=current_user, info=user_info)
 
 @app.route("/admin", methods=['GET', 'POST'])
 @admin_required
 def admin():
-    return render_template("admin.html")
-    if request.method == 'POST':
-        action = request.form.get('action')
-        if action == 'deposit':
-            amount = float(request.form.get('amount', 0))
-            if amount > 0:
-                current_user.balance += amount
-                db.session.commit()
-                flash(f"Successfully deposited ${amount:.2f}!", "success")
-            return redirect(url_for('user'))
+    users = User.query.all()
+    return render_template("admin.html", users=users)
 
-    owned_skins = Skin.query.filter_by(owner_id=current_user.id).all()
-    return render_template("user.html", owned_skins=owned_skins)
+@app.route("/admin/edit/<int:user_id>", methods=['GET', 'POST'])
+@admin_required
+def admin_edit_user(user_id):
+    edit_user = User.query.get_or_404(user_id)
+    if request.method == 'POST':
+        try:
+            new_username = clean_form_data('username', edit_user.username)
+            new_email = clean_form_data('email', edit_user.info.email)
+            new_name = clean_form_data('name', edit_user.info.name)
+            new_address = clean_form_data('address', edit_user.info.address)
+            new_phone = clean_form_data('phone', edit_user.info.phone_number)
+            new_password = clean_form_data('password')
+            new_user_type = clean_form_data('user_type', edit_user.user_type)
+
+            if not (new_username and new_email and new_name and new_address and new_phone):
+                flash('All fields are required.', 'error')
+                return redirect(url_for('admin_edit_user', user_id=user_id))
+
+            errors = []
+
+            if new_password:
+                errors.extend(validate_password(new_password))
+            if new_phone != edit_user.info.phone_number:
+                errors.extend(validate_phone(new_phone))
+            if new_username != edit_user.username:
+                if User.query.filter_by(username=new_username).first():
+                    errors.append('Username already taken.')
+            if new_email != edit_user.info.email:
+                if UserInfo.query.filter_by(email=new_email).first():
+                    errors.append('Email already in use.')
+
+            if errors:
+                session['form_data'] = {
+                    'username': new_username, 'email': new_email,
+                    'name': new_name, 'address': new_address, 'phone': new_phone
+                }
+                for error in errors:
+                    flash(error, 'error')
+                return redirect(url_for('admin_edit_user', user_id=user_id))
+
+            edit_user.username = new_username
+            edit_user.info.name = new_name
+            edit_user.info.email = new_email
+            edit_user.info.address = new_address
+            edit_user.info.phone_number = new_phone
+            edit_user.user_type = new_user_type
+
+            if new_password:
+                edit_user.set_password(new_password)
+
+            db.session.commit()
+            flash(f'User {new_username} updated successfully.', 'success')
+            return redirect(url_for('admin'))
+
+        except Exception as e:
+            db.session.rollback()
+            flash('An unexpected error occurred.', 'error')
+            print(f"Admin edit error: {e}")
+            return redirect(url_for('admin_edit_user', user_id=user_id))
+
+    form_data = session.pop('form_data', {})
+    return render_template('admin_edit_user.html', edit_user=edit_user, form_data=form_data)
+
+@app.route("/admin/delete/<int:user_id>", methods=['POST'])
+@admin_required
+def admin_delete_user(user_id):
+    if user_id == current_user.id:
+        flash('Cannot delete admin.', 'error')
+        return redirect(url_for('admin')) 
+    user = User.query.get_or_404(user_id)
+    try:
+        db.session.delete(user)
+        db.session.commit()
+        
+        flash(f'User {user.username} deleted successfully.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Could not delete user.', 'error')
+        print(f"Delete error: {e}")
+    return redirect(url_for('admin'))
 
 @app.route("/cart", methods=['GET', 'POST'])
 @login_required

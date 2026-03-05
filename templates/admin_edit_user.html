@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% from "macros.html" import display_flashed_messages with context %}
+
+{% block content %}
+<h2 class="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-white">
+    Editing user: {{ edit_user.username }}
+</h2>
+<div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
+    <div class="sm:mx-auto sm:w-full sm:max-w-sm">
+        <div class="max-w-sm mx-auto">{{ display_flashed_messages() }}</div>
+        <form class="space-y-6" action="{{ url_for('admin_edit_user', user_id=edit_user.id) }}" method="POST">
+            <div>
+                <label for="name" class="block text-sm font-medium leading-6 text-white">Name</label>
+                <div class="mt-2">
+                    <input id="name" name="name" type="text" required
+                        value="{{ form_data.get('name', edit_user.info.name) }}"
+                        class="block w-full rounded-md border-0 py-2 px-3 text-gray-900 bg-white">
+                </div>
+            </div>
+
+            <div>
+                <label for="username" class="block text-sm font-medium leading-6 text-white">Username</label>
+                <div class="mt-2">
+                    <input id="username" name="username" type="text" required
+                        value="{{ form_data.get('username', edit_user.username) }}"
+                        class="block w-full rounded-md border-0 py-2 px-3 text-gray-900 bg-white">
+                </div>
+            </div>
+
+            <div>
+                <label for="email" class="block text-sm font-medium leading-6 text-white">Email address</label>
+                <div class="mt-2">
+                    <input id="email" name="email" type="email" required
+                        value="{{ form_data.get('email', edit_user.info.email) }}"
+                        class="block w-full rounded-md border-0 py-2 px-3 text-gray-900 bg-white">
+                </div>
+            </div>
+
+            <div>
+                <label for="address" class="block text-sm font-medium leading-6 text-white">Address</label>
+                <div class="mt-2">
+                    <input id="address" name="address" type="text" required
+                        value="{{ form_data.get('address', edit_user.info.address) }}"
+                        class="block w-full rounded-md border-0 py-2 px-3 text-gray-900 bg-white">
+                </div>
+            </div>
+
+            <div>
+                <label for="phone" class="block text-sm font-medium leading-6 text-white">Phone number</label>
+                <div class="mt-2">
+                    <input id="phone" name="phone" type="tel" required
+                        value="{{ form_data.get('phone', edit_user.info.phone_number) }}"
+                        class="block w-full rounded-md border-0 py-2 px-3 text-gray-900 bg-white">
+                </div>
+            </div>
+
+            <div>
+                <label for="user_type" class="block text-sm font-medium leading-6 text-white">User Type</label>
+                <div class="mt-2">
+                    <select id="user_type" name="user_type"
+                        class="block w-full rounded-md border-0 py-2 px-3 text-gray-900 bg-white">
+                        <option value="user" {% if edit_user.user_type=='user' %}selected{% endif %}>User</option>
+                        <option value="admin" {% if edit_user.user_type=='admin' %}selected{% endif %}>Admin</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label for="password" class="block text-sm font-medium leading-6 text-white">
+                    New Password <span class="text-gray-400 font-normal">(leave blank to keep current)</span>
+                </label>
+                <div class="mt-2">
+                    <input id="password" name="password" type="password"
+                        class="block w-full rounded-md border-0 py-2 px-3 text-gray-900 bg-white">
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <button type="submit"
+                    class="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-500">
+                    Save Changes
+                </button>
+                <a href="{{ url_for('admin') }}"
+                    class="flex w-full justify-center rounded-md bg-gray-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-gray-500">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
