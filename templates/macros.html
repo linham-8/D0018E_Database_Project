@@ -100,3 +100,20 @@
     {% endif %}
 </div>
 {% endmacro %}
+
+{% macro display_flashed_messages() %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="space-y-4 mb-6">
+    {% for category, message in messages %}
+    {% set classes = flash_colors.get(category, 'bg-gray-800 text-gray-300 border-gray-600') %}
+    <div class="flex items-center p-4 rounded-md border {{ classes }}" role="alert">
+        <div class="text-sm font-medium">
+            {{ message }}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+{% endmacro %}

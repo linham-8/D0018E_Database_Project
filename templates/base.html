@@ -61,11 +61,18 @@
                 <div class="relative group">
                     <a href="{{ url_for('user') }}"
                         class="inline-block px-6 py-2 bg-gray-700 hover:bg-gray-600 rounded-btn font-bold transition">
-                        User
+                        {{ current_user.username }}
                     </a>
 
                     <div class="absolute right-0 top-full w-32 pt-2 hidden group-hover:block z-50">
                         <div class="bg-gray-800 rounded-lg shadow-xl border border-gray-700 overflow-hidden">
+                            {% if current_user.user_type == 'admin' %}
+                            <a href="{{ url_for('admin') }}"
+                                class="block px-4 py-2 hover:bg-gray-700 border-b border-gray-700 transition text-sm font-bold">
+                                Admin dashboard
+                            </a>
+                            {% endif %}
+
                             <a href="{{ url_for('logout') }}"
                                 class="block px-4 py-2 text-center text-red-400 hover:bg-gray-700 transition text-sm font-bold">
                                 Logout
@@ -210,10 +217,71 @@
                     {% else %}
                     <a href="{{ url_for('login') }}"
                         class="w-full bg-gray-700 text-white text-center py-2 rounded-btn font-bold hover:bg-gray-600 transition-colors">
-                        Log in to buy
+                        Log in to buy or comment
                     </a>
                     {% endif %}
                 </div>
+
+                <div class="mt-8 border-t border-gray-700 pt-6">
+                    <h3 class="text-lg font-bold text-gray-100 mb-4">Comments</h3>
+                    <div id="modalCommentsList"
+                        class="space-y-3 mb-4 max-h-40 overflow-y-auto text-sm text-gray-300 pr-2 custom-scrollbar">
+                    </div>
+                    {% if current_user.is_authenticated %}
+                    <form id="commentForm" method="POST" action="">
+                        <input type="hidden" name="rating" id="hiddenRatingInput" value="0">
+
+                        <div class="flex items-center gap-1 mb-2">
+                            <span class="text-sm text-gray-400 mr-2">Rating:</span>
+                            <svg class="js-star cursor-pointer w-6 h-6 text-gray-400 hover:text-yellow-400 transition-colors"
+                                data-value="1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.005Z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                            <svg class="js-star cursor-pointer w-6 h-6 text-gray-400 hover:text-yellow-400 transition-colors"
+                                data-value="2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.005Z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                            <svg class="js-star cursor-pointer w-6 h-6 text-gray-400 hover:text-yellow-400 transition-colors"
+                                data-value="3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.005Z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                            <svg class="js-star cursor-pointer w-6 h-6 text-gray-400 hover:text-yellow-400 transition-colors"
+                                data-value="4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.005Z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                            <svg class="js-star cursor-pointer w-6 h-6 text-gray-400 hover:text-yellow-400 transition-colors"
+                                data-value="5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.005Z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </div>
+
+                        <div class="flex gap-2">
+                            <input type="text" name="comment_text" placeholder="Write a comment..."
+                                class="flex-1 bg-gray-900 border border-gray-600 text-white p-2 rounded-btn focus:outline-none focus:border-accent transition-colors">
+                            <button type="submit"
+                                class="bg-gray-700 hover:bg-gray-600 text-gray-200 px-4 py-2 rounded-btn font-bold transition-colors border border-gray-600">
+                                Submit
+                            </button>
+                        </div>
+                    </form>
+                    {% endif %}
+                </div>
+
             </div>
         </div>
     </div>
