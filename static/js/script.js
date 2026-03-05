@@ -7,12 +7,54 @@ document.addEventListener('DOMContentLoaded', () => {
   const modal = document.getElementById('itemModal');
   if (!modal) return;
 
+  // =========================================================
+  // 1. STAR RATING LOGIC (Strictly isolated to the form!)
+  // =========================================================
+  // Notice we added #commentForm to the query so it ONLY gets the 5 modal stars
+  const formStars = document.querySelectorAll('#commentForm .js-star');
+  const ratingInput = document.getElementById('hiddenRatingInput');
+
+  if (formStars.length > 0 && ratingInput) {
+    formStars.forEach(star => {
+      // Using onclick guarantees only one click listener ever exists
+      star.onclick = function (e) {
+        const clickedRating = parseInt(this.dataset.value);
+        const currentSavedRating = parseInt(ratingInput.value);
+
+        // Toggle logic
+        if (clickedRating === currentSavedRating) {
+          ratingInput.value = 0; // Reset
+          formStars.forEach(s => {
+            s.classList.remove('text-yellow-400');
+            s.classList.add('text-gray-400');
+          });
+        } else {
+          ratingInput.value = clickedRating; // Set new rating
+          formStars.forEach(s => {
+            const starVal = parseInt(s.dataset.value);
+            if (starVal <= clickedRating) {
+              s.classList.remove('text-gray-400');
+              s.classList.add('text-yellow-400');
+            } else {
+              s.classList.remove('text-yellow-400');
+              s.classList.add('text-gray-400');
+            }
+          });
+        }
+      };
+    });
+  }
+
+  // =========================================================
+  // 2. MODAL OPEN LOGIC
+  // =========================================================
   document.body.addEventListener('click', e => {
     const card = e.target.closest('.js-skin-card');
 
     if (card) {
       const data = card.dataset;
 
+      // Populate modal details
       document.getElementById('modalItemId').textContent =
         'Item id #' + data.id;
       document.getElementById('modalName').textContent = data.name;
@@ -46,13 +88,11 @@ document.addEventListener('DOMContentLoaded', () => {
         statTrakBadge.classList.remove('block');
       }
 
-      // Stores the ID globally for the add to cart button
       window.currentSelectedItemId = data.id;
 
       const inCart = data.incart === 'true';
       const addToCartForm = document.getElementById('modalAddToCartForm');
       const addToCartBtn = document.getElementById('modalAddToCartBtn');
-      const submitCommentBtn = document.getElementById('submitCommentBtn');
       const commentsList = document.getElementById('modalCommentsList');
 
       if (addToCartForm && addToCartBtn) {
@@ -71,146 +111,88 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
-      // Add comment logic
-      if (submitCommentBtn) {
-        submitCommentBtn.addEventListener('click', () => {
-          const input = document.getElementById('newCommentInput');
-          if (!input) return;
+      // --- RESET THE MODAL STARS ONLY ---
+      const activeRatingInput = document.getElementById('hiddenRatingInput');
+      const activeFormStars = document.querySelectorAll(
+        '#commentForm .js-star',
+      );
 
-          const text = input.value.trim();
-          const itemId = window.currentSelectedItemId;
-
-          if (text === '') return;
-
-          console.log(`Submitting review for item ${itemId}: ${text}`);
-        });
+      if (activeRatingInput) {
+        activeRatingInput.value = 0;
       }
-
-      // Delete comment logic
-      if (commentsList) {
-        commentsList.addEventListener('click', e => {
-          const delBtn = e.target.closest('.js-delete-comment');
-
-          if (delBtn) {
-            const commentBox = delBtn.closest('.js-comment-box');
-            const commentId = commentBox.dataset.commentId;
-
-            if (confirm('Are you sure you want to delete this comment?')) {
-              console.log(`Deleting comment ID: ${commentId}`);
-              commentBox.remove();
-            }
-          }
+      if (activeFormStars.length > 0) {
+        activeFormStars.forEach(s => {
+          s.classList.remove('text-yellow-400');
+          s.classList.add('text-gray-400');
         });
-      }
-
-      if (commentsList) {
-        commentsList.innerHTML =
-          '<p class="text-gray-500 italic text-center py-4">Loading reviews...</p>';
       }
 
       const inputField = document.getElementById('newCommentInput');
       if (inputField) inputField.value = '';
 
-      // Update the Add Comment form URL to point to the correct skin
+      // Update Comment Form URL
       const form = document.getElementById('commentForm');
       if (form) form.action = `/add_comment/${data.id}`;
 
-      // Looks for the reviews for this specific skin
-      fetch(`/api/comments/${data.id}`)
-        .then(response => response.json())
-        .then(result => {
-          if (result.status === 'success') {
-            const comments = result.comments;
+      // Fetch Comments
+      if (commentsList) {
+        commentsList.innerHTML =
+          '<p class="text-gray-500 italic text-center py-4">Loading reviews...</p>';
 
-            if (comments.length === 0) {
-              commentsList.innerHTML =
-                '<p class="text-gray-500 italic text-center py-4">No reviews yet. Be the first!</p>';
-              return;
-            }
+        fetch(`/api/comments/${data.id}`)
+          .then(response => response.json())
+          .then(result => {
+            if (result.status === 'success') {
+              const comments = result.comments;
 
-            let html = '';
-            comments.forEach(c => {
-              // Generate stars
-              let starsVisual = '';
-              if (c.rating > 0) {
-                starsVisual = `<span class="text-yellow-400 text-xs ml-2">`;
-                for (let i = 0; i < c.rating; i++) starsVisual += '★';
-                starsVisual += `</span>`;
+              if (comments.length === 0) {
+                commentsList.innerHTML =
+                  '<p class="text-gray-500 italic text-center py-4">No reviews yet. Be the first!</p>';
+                return;
               }
 
-              let deleteBtn = '';
-              if (c.can_delete) {
-                // Checks if owner OR admin
-                deleteBtn = `
-                                        <form method="POST" action="/delete_comment/${c.id}" class="absolute top-2 right-2">
-                                            <button type="submit" class="text-gray-500 hover:text-red-500 transition-colors cursor-pointer" title="Delete Review">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                </svg>
-                                            </button>
-                                        </form>`;
-              }
-
-              // Build the comment box
-              html += `
-                                    <div class="bg-gray-900 p-3 rounded-card border border-gray-700 relative js-comment-box" data-comment-id="${c.id}">
-                                        <span class="font-bold text-accent text-xs">${c.author}</span>
-                                        <span class="text-gray-500 text-xs ml-2">${c.date}</span>
-                                        ${starsVisual}
-                                        ${deleteBtn}
-                                        <p class="mt-1">${c.text}</p>
-                                    </div>
-                                    `;
-            });
-
-            commentsList.innerHTML = html;
-          }
-        })
-        .catch(error => {
-          console.error('Error fetching comments:', error);
-          commentsList.innerHTML =
-            '<p class="text-red-500 italic py-4">Error loading reviews.</p>';
-        });
-
-      // Starr rating logic
-      const stars = document.querySelectorAll('.js-star');
-      const hiddenRatingInput = document.getElementById('hiddenRatingInput');
-
-      if (stars && hiddenRatingInput) {
-        stars.forEach(star => {
-          star.addEventListener('click', e => {
-            const clickedRating = parseInt(e.currentTarget.dataset.value);
-            const currentSavedRating = parseInt(hiddenRatingInput.value);
-
-            // TOGGLE CHECK: Did they click the exact same star that is currently set?
-            if (clickedRating === currentSavedRating) {
-              // Yes -> DESELECT ALL
-              hiddenRatingInput.value = 0; // Reset to none for Python
-
-              stars.forEach(s => {
-                s.classList.remove('text-yellow-400');
-                s.classList.add('text-gray-400');
-              });
-            } else {
-              // No -> SELECT NORMALLY
-              hiddenRatingInput.value = clickedRating; // Save for Python!
-
-              stars.forEach(s => {
-                const starVal = parseInt(s.dataset.value);
-                if (starVal <= clickedRating) {
-                  s.classList.remove('text-gray-400');
-                  s.classList.add('text-yellow-400');
-                } else {
-                  s.classList.remove('text-yellow-400');
-                  s.classList.add('text-gray-400');
+              let html = '';
+              comments.forEach(c => {
+                let starsVisual = '';
+                if (c.rating > 0) {
+                  starsVisual = `<span class="text-yellow-400 text-xs ml-2">`;
+                  for (let i = 0; i < c.rating; i++) starsVisual += '★';
+                  starsVisual += `</span>`;
                 }
+
+                let deleteBtn = '';
+                if (c.can_delete) {
+                  deleteBtn = `
+                    <form method="POST" action="/delete_comment/${c.id}" class="absolute top-2 right-2">
+                        <button type="submit" class="text-gray-500 hover:text-red-500 transition-colors cursor-pointer" title="Delete Review">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </form>`;
+                }
+
+                html += `
+                  <div class="bg-gray-900 p-3 rounded-card border border-gray-700 relative js-comment-box" data-comment-id="${c.id}">
+                      <span class="font-bold text-accent text-xs">${c.author}</span>
+                      <span class="text-gray-500 text-xs ml-2">${c.date}</span>
+                      ${starsVisual}
+                      ${deleteBtn}
+                      <p class="mt-1">${c.text}</p>
+                  </div>`;
               });
+
+              commentsList.innerHTML = html;
             }
+          })
+          .catch(error => {
+            console.error('Error fetching comments:', error);
+            commentsList.innerHTML =
+              '<p class="text-red-500 italic py-4">Error loading reviews.</p>';
           });
-        });
       }
 
-      // 7. Show the modal
+      // Show the modal
       modal.classList.remove('hidden');
       modal.classList.add('flex');
     }
