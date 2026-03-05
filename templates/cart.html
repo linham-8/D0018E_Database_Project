@@ -1,8 +1,11 @@
 {% extends "base.html" %}
 
+{% from "macros.html" import display_flashed_messages with context %}
+
 {% block content %}
 <div class="max-w-4xl mx-auto p-6">
     <h1 class="text-3xl font-bold text-gray-200 mb-6">Your Shopping Cart</h1>
+    <div class="max-w-sm mx-auto">{{ display_flashed_messages() }}</div>
 
     <div class="bg-gray-800 rounded-card p-6 border border-gray-700">
         {% if cart_items %}
