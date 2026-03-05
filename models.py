@@ -26,7 +26,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(64), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
     info = db.relationship('UserInfo', backref='user_account', uselist=False, cascade='all, delete-orphan')
-    transactions = db.relationship('Transaction', backref='buyer', lazy=True, foreign_keys='Transaction.buyer_id', passive_deletes=True)
+    transactions = db.relationship('Transaction', backref='user', lazy=True, foreign_keys='Transaction.user_id', passive_deletes=True)
     balance = db.Column(db.Float, default=0.0)
     owned_skins = db.relationship('Skin', backref='owner', lazy=True, passive_deletes=True)
     cart_items = db.relationship('CartItem', backref='user', lazy=True, cascade='all, delete-orphan')
@@ -48,7 +48,7 @@ class UserInfo(db.Model):
 class Transaction(db.Model):
     __tablename__ = 'transactions'
     id = db.Column(db.Integer, primary_key=True)
-    buyer_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'), nullable=True)
     skin_id = db.Column(db.Integer, db.ForeignKey('skins.id', ondelete='SET NULL'), nullable=True)
     transaction_price = db.Column(db.Float, nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.now)
