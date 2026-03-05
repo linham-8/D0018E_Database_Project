@@ -103,8 +103,8 @@ def inject_cart():
 @app.context_processor
 def inject_flash_colors():
     color_map = {
-        'success': 'bg-green-900/30 text-green-400 border-green-500/50',
-        'error': 'bg-red-900/30 text-red-400 border-red-500/50',
+        "success": "bg-green-900/30 text-green-400 border-green-500/50",
+        "error": "bg-red-900/30 text-red-400 border-red-500/50",
     }
     return dict(flash_colors=color_map)
 
@@ -190,19 +190,20 @@ def get_list_view_data(filters, sort_by, page):
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not current_user.is_authenticated or current_user.user_type != 'admin':
+        if not current_user.is_authenticated or current_user.user_type != "admin":
             abort(403)
         return f(*args, **kwargs)
+
     return decorated_function
 
 
 def clean_form_data(key, default=None):
-    value = request.form.get(key, '').strip()
+    value = request.form.get(key, "").strip()
 
     if not value:
         return default
 
-    if key in ('email', 'username', 'login-id'):
+    if key in ("email", "username", "login-id"):
         return value.lower()
 
     return value
@@ -212,15 +213,15 @@ def validate_password(password, min_length=8):
     errors = []
 
     if len(password) < min_length:
-        errors.append(f'Password must be at least {min_length} characters long.')
-    if not re.search(r'[A-Z]', password):
-        errors.append('Password must contain at least one uppercase letter.')
-    if not re.search(r'[a-z]', password):
-        errors.append('Password must contain at least one lowercase letter.')
-    if not re.search(r'[0-9]', password):
-        errors.append('Password must contain at least one number.')
+        errors.append(f"Password must be at least {min_length} characters long.")
+    if not re.search(r"[A-Z]", password):
+        errors.append("Password must contain at least one uppercase letter.")
+    if not re.search(r"[a-z]", password):
+        errors.append("Password must contain at least one lowercase letter.")
+    if not re.search(r"[0-9]", password):
+        errors.append("Password must contain at least one number.")
     if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
-        errors.append('Password must contain at least one special character.')
+        errors.append("Password must contain at least one special character.")
 
     return errors
 
@@ -228,14 +229,14 @@ def validate_password(password, min_length=8):
 def validate_phone(phone):
     errors = []
 
-    if not re.match(r'^[\d\s\+\-\(\)\.]+$', phone):
-        errors.append('Phone number contains invalid characters.')
+    if not re.match(r"^[\d\s\+\-\(\)\.]+$", phone):
+        errors.append("Phone number contains invalid characters.")
 
-    digits = re.sub(r'\D', '', phone)
+    digits = re.sub(r"\D", "", phone)
     if len(digits) < 7:
-        errors.append('Phone number is too short.')
+        errors.append("Phone number is too short.")
     if len(digits) > 15:
-        errors.append('Phone number is too long.')
+        errors.append("Phone number is too long.")
 
     return errors
 
@@ -286,9 +287,9 @@ def index():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('index'))
-    if request.method == 'POST':
-        login_id = clean_form_data('login-id')
+        return redirect(url_for("index"))
+    if request.method == "POST":
+        login_id = clean_form_data("login-id")
 
         user = User.query.filter_by(username=login_id).first()
         if not user:
@@ -296,12 +297,12 @@ def login():
             if user_info:
                 user = user_info.user_account
 
-        if user and user.check_password(request.form['password']):
+        if user and user.check_password(request.form["password"]):
             login_user(user)
             return redirect(url_for("index"))
         else:
-            flash('Incorrect credentials', 'error')
-            return redirect(url_for('login'))
+            flash("Incorrect credentials", "error")
+            return redirect(url_for("login"))
 
     return render_template("login.html")
 
@@ -309,19 +310,19 @@ def login():
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if current_user.is_authenticated:
-        return redirect(url_for('index'))
-    if request.method == 'POST':
+        return redirect(url_for("index"))
+    if request.method == "POST":
         try:
-            username = clean_form_data('username')
-            password = clean_form_data('password')
-            email = clean_form_data('email')
-            name = clean_form_data('name')
-            address = clean_form_data('address')
-            phone = clean_form_data('phone')
+            username = clean_form_data("username")
+            password = clean_form_data("password")
+            email = clean_form_data("email")
+            name = clean_form_data("name")
+            address = clean_form_data("address")
+            phone = clean_form_data("phone")
 
             if not (username and password and email and name and address and phone):
-                flash('All fields are required', 'error')
-                return redirect(url_for('register'))
+                flash("All fields are required", "error")
+                return redirect(url_for("register"))
 
             errors = []
 
@@ -329,21 +330,21 @@ def register():
             errors.extend(validate_phone(phone))
 
             if User.query.filter_by(username=username).first():
-                errors.append('Username already taken.')
+                errors.append("Username already taken.")
             if UserInfo.query.filter_by(email=email).first():
-                errors.append('Email already registered.')
+                errors.append("Email already registered.")
 
             if errors:
                 for error in errors:
-                    flash(error, 'error')
-                return redirect(url_for('register'))
+                    flash(error, "error")
+                return redirect(url_for("register"))
 
             first_user = User.query.count() == 0
             user = User(username=username)
             user.set_password(password)
 
             if first_user:
-                user.user_type = 'admin'
+                user.user_type = "admin"
 
             db.session.add(user)
             db.session.flush()
@@ -358,13 +359,13 @@ def register():
             db.session.add(user_info)
             db.session.commit()
 
-            return redirect(url_for('login'))
+            return redirect(url_for("login"))
 
         except Exception as e:
             db.session.rollback()
-            flash('An unexpected error occurred. Please try again.', 'error')
+            flash("An unexpected error occurred. Please try again.", "error")
             print(f"Registration error: {e}")
-            return redirect(url_for('register'))
+            return redirect(url_for("register"))
 
     return render_template("register.html")
 
@@ -373,7 +374,7 @@ def register():
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('login'))
+    return redirect(url_for("login"))
 
 
 @app.route("/add_to_cart/<int:skin_id>", methods=["POST"])
@@ -405,33 +406,35 @@ def remove_from_cart(item_id):
         db.session.delete(item)
         db.session.commit()
         flash("Removed from cart!", "success")
-    return redirect(url_for('cart'))
+    return redirect(url_for("cart"))
 
 
 @app.route("/user", methods=["GET", "POST"])
 @login_required
 def user():
     user_info = current_user.info
-    if request.method == 'POST':
-        action = request.form.get('action')
-        if action == 'deposit':
-            amount = float(request.form.get('amount', 0))
+    if request.method == "POST":
+        action = request.form.get("action")
+        if action == "deposit":
+            amount = float(request.form.get("amount", 0))
             if amount > 0:
                 current_user.balance += amount
                 db.session.commit()
                 flash(f"Successfully deposited ${amount:.2f}!", "success")
-            return redirect(url_for('user'))
+            return redirect(url_for("user"))
         try:
-            new_username = clean_form_data('username', current_user.username.lower())
-            new_email = clean_form_data('email', user_info.email.lower())
-            new_name = clean_form_data('name', user_info.name)
-            new_address = clean_form_data('address', user_info.address)
-            new_phone = clean_form_data('phone', user_info.phone_number)
-            new_password = clean_form_data('password')
+            new_username = clean_form_data("username", current_user.username.lower())
+            new_email = clean_form_data("email", user_info.email.lower())
+            new_name = clean_form_data("name", user_info.name)
+            new_address = clean_form_data("address", user_info.address)
+            new_phone = clean_form_data("phone", user_info.phone_number)
+            new_password = clean_form_data("password")
 
-            if not (new_username and new_email and new_name and new_address and new_phone):
-                flash('All fields are required', 'error')
-                return redirect(url_for('user'))
+            if not (
+                new_username and new_email and new_name and new_address and new_phone
+            ):
+                flash("All fields are required", "error")
+                return redirect(url_for("user"))
 
             errors = []
 
@@ -441,15 +444,15 @@ def user():
                 errors.extend(validate_phone(new_phone))
             if new_username != current_user.username:
                 if User.query.filter_by(username=new_username).first():
-                    errors.append('Username already taken.')
+                    errors.append("Username already taken.")
             if new_email != user_info.email:
                 if UserInfo.query.filter_by(email=new_email).first():
-                    errors.append('Email already in use.')
+                    errors.append("Email already in use.")
 
             if errors:
                 for error in errors:
-                    flash(error, 'error')
-                return redirect(url_for('user'))
+                    flash(error, "error")
+                return redirect(url_for("user"))
 
             current_user.username = new_username
             user_info.name = new_name
@@ -462,41 +465,47 @@ def user():
 
             db.session.commit()
 
-            flash('Profile updated successfully', 'success')
-            return redirect(url_for('user'))
+            flash("Profile updated successfully", "success")
+            return redirect(url_for("user"))
 
         except Exception as e:
             db.session.rollback()
-            flash('An unexpected error occurred. Please try again.', 'error')
+            flash("An unexpected error occurred. Please try again.", "error")
             print(f"Update error: {e}")
-            return redirect(url_for('user'))
+            return redirect(url_for("user"))
 
     owned_skins = Skin.query.filter_by(owner_id=current_user.id).all()
-    return render_template('user.html', owned_skins=owned_skins, user=current_user, info=user_info)
+    return render_template(
+        "user.html", owned_skins=owned_skins, user=current_user, info=user_info
+    )
 
-@app.route("/admin", methods=['GET', 'POST'])
+
+@app.route("/admin", methods=["GET", "POST"])
 @admin_required
 def admin():
     users = User.query.all()
     return render_template("admin.html", users=users)
 
-@app.route("/admin/edit/<int:user_id>", methods=['GET', 'POST'])
+
+@app.route("/admin/edit/<int:user_id>", methods=["GET", "POST"])
 @admin_required
 def admin_edit_user(user_id):
     edit_user = User.query.get_or_404(user_id)
-    if request.method == 'POST':
+    if request.method == "POST":
         try:
-            new_username = clean_form_data('username', edit_user.username)
-            new_email = clean_form_data('email', edit_user.info.email)
-            new_name = clean_form_data('name', edit_user.info.name)
-            new_address = clean_form_data('address', edit_user.info.address)
-            new_phone = clean_form_data('phone', edit_user.info.phone_number)
-            new_password = clean_form_data('password')
-            new_user_type = clean_form_data('user_type', edit_user.user_type)
+            new_username = clean_form_data("username", edit_user.username)
+            new_email = clean_form_data("email", edit_user.info.email)
+            new_name = clean_form_data("name", edit_user.info.name)
+            new_address = clean_form_data("address", edit_user.info.address)
+            new_phone = clean_form_data("phone", edit_user.info.phone_number)
+            new_password = clean_form_data("password")
+            new_user_type = clean_form_data("user_type", edit_user.user_type)
 
-            if not (new_username and new_email and new_name and new_address and new_phone):
-                flash('All fields are required.', 'error')
-                return redirect(url_for('admin_edit_user', user_id=user_id))
+            if not (
+                new_username and new_email and new_name and new_address and new_phone
+            ):
+                flash("All fields are required.", "error")
+                return redirect(url_for("admin_edit_user", user_id=user_id))
 
             errors = []
 
@@ -506,19 +515,22 @@ def admin_edit_user(user_id):
                 errors.extend(validate_phone(new_phone))
             if new_username != edit_user.username:
                 if User.query.filter_by(username=new_username).first():
-                    errors.append('Username already taken.')
+                    errors.append("Username already taken.")
             if new_email != edit_user.info.email:
                 if UserInfo.query.filter_by(email=new_email).first():
-                    errors.append('Email already in use.')
+                    errors.append("Email already in use.")
 
             if errors:
-                session['form_data'] = {
-                    'username': new_username, 'email': new_email,
-                    'name': new_name, 'address': new_address, 'phone': new_phone
+                session["form_data"] = {
+                    "username": new_username,
+                    "email": new_email,
+                    "name": new_name,
+                    "address": new_address,
+                    "phone": new_phone,
                 }
                 for error in errors:
-                    flash(error, 'error')
-                return redirect(url_for('admin_edit_user', user_id=user_id))
+                    flash(error, "error")
+                return redirect(url_for("admin_edit_user", user_id=user_id))
 
             edit_user.username = new_username
             edit_user.info.name = new_name
@@ -531,35 +543,38 @@ def admin_edit_user(user_id):
                 edit_user.set_password(new_password)
 
             db.session.commit()
-            flash(f'User {new_username} updated successfully.', 'success')
-            return redirect(url_for('admin'))
+            flash(f"User {new_username} updated successfully.", "success")
+            return redirect(url_for("admin"))
 
         except Exception as e:
             db.session.rollback()
-            flash('An unexpected error occurred.', 'error')
+            flash("An unexpected error occurred.", "error")
             print(f"Admin edit error: {e}")
-            return redirect(url_for('admin_edit_user', user_id=user_id))
+            return redirect(url_for("admin_edit_user", user_id=user_id))
 
-    form_data = session.pop('form_data', {})
-    return render_template('admin_edit_user.html', edit_user=edit_user, form_data=form_data)
+    form_data = session.pop("form_data", {})
+    return render_template(
+        "admin_edit_user.html", edit_user=edit_user, form_data=form_data
+    )
 
-@app.route("/admin/delete/<int:user_id>", methods=['POST'])
+
+@app.route("/admin/delete/<int:user_id>", methods=["POST"])
 @admin_required
 def admin_delete_user(user_id):
     if user_id == current_user.id:
-        flash('Cannot delete admin.', 'error')
-        return redirect(url_for('admin'))
+        flash("Cannot delete admin.", "error")
+        return redirect(url_for("admin"))
     user = User.query.get_or_404(user_id)
     try:
         db.session.delete(user)
         db.session.commit()
 
-        flash(f'User {user.username} deleted successfully.', 'success')
+        flash(f"User {user.username} deleted successfully.", "success")
     except Exception as e:
         db.session.rollback()
-        flash('Could not delete user.', 'error')
+        flash("Could not delete user.", "error")
         print(f"Delete error: {e}")
-    return redirect(url_for('admin'))
+    return redirect(url_for("admin"))
 
 
 @app.route("/cart", methods=["GET", "POST"])
@@ -572,6 +587,14 @@ def cart():
     )
 
     if request.method == "POST":
+        has_sold_items = any(item.skin.owner_id is not None for item in cart_items)
+        if has_sold_items:
+            flash(
+                "Some items in your cart were already sold. Please remove them before checking out.",
+                "error",
+            )
+            return redirect(url_for("cart"))
+
         if current_user.balance < total_price:
             flash(
                 "Insufficient balance! Please deposit funds on your profile.", "error"
@@ -580,21 +603,18 @@ def cart():
 
         purchased_any = False
         for item in cart_items:
-            if item.skin.owner_id is None:
-                item.skin.owner_id = current_user.id
-                current_user.balance -= item.skin.price
+            item.skin.owner_id = current_user.id
+            current_user.balance -= item.skin.price
 
-                tx = Transaction(
-                    user_id=current_user.id,
-                    skin_id=item.skin.id,
-                    transaction_price=item.skin.price,
-                )
-                db.session.add(tx)
+            tx = Transaction(
+                user_id=current_user.id,
+                skin_id=item.skin.id,
+                transaction_price=item.skin.price,
+            )
+            db.session.add(tx)
 
-                db.session.delete(item)
-                purchased_any = True
-            else:
-                db.session.delete(item)
+            db.session.delete(item)
+            purchased_any = True
 
         if purchased_any:
             db.session.commit()
@@ -602,86 +622,104 @@ def cart():
             return redirect(url_for("user"))
         else:
             db.session.commit()
-            flash("Some items in your cart were already sold.", "error")
+            flash("Your cart is empty.", "error")
             return redirect(url_for("cart"))
 
     return render_template("cart.html", cart_items=cart_items, total_price=total_price)
 
+
 # Fetch comments logic (Used by JavaScript to load the modal)
-@app.route('/api/comments/<int:skin_id>', methods=['GET'])
+@app.route("/api/comments/<int:skin_id>", methods=["GET"])
 def get_comments(skin_id):
-    comments = Comment.query.filter_by(skin_id=skin_id).order_by(Comment.timestamp.desc()).all()
+    comments = (
+        Comment.query.filter_by(skin_id=skin_id)
+        .order_by(Comment.timestamp.desc())
+        .all()
+    )
 
     comments_data = []
     for comment in comments:
         # Check if the user is allowed to delete this (owner or admin)
         can_delete = False
         if current_user.is_authenticated:
-            is_owner = (comment.user_id == current_user.id)
-            is_admin = (current_user.user_type == 'admin')
+            is_owner = comment.user_id == current_user.id
+            is_admin = current_user.user_type == "admin"
             if is_owner or is_admin:
                 can_delete = True
 
-        comments_data.append({
-            "id": comment.id,
-            "author": comment.user_name,
-            "text": comment.comment_text or "",
-            "rating": comment.rating or 0,
-            "can_delete": can_delete,
-            "date": comment.timestamp.strftime("%Y-%m-%d")
-        })
+        comments_data.append(
+            {
+                "id": comment.id,
+                "author": comment.user_name,
+                "text": comment.comment_text or "",
+                "rating": comment.rating or 0,
+                "can_delete": can_delete,
+                "date": comment.timestamp.strftime("%Y-%m-%d"),
+            }
+        )
     return jsonify({"status": "success", "comments": comments_data}), 200
 
+
 # Add comment logic
-@app.route('/add_comment/<int:skin_id>', methods=['POST'])
+@app.route("/add_comment/<int:skin_id>", methods=["POST"])
 @login_required
 def add_comment(skin_id):
     skin = Skin.query.get_or_404(skin_id)
 
     # Prevent reviewing sold items
     if skin.owner_id is not None:
-        flash(message="You cannot leave a review on an item that is already sold.", category="error")
-        return redirect(location=request.referrer or url_for('index'))
+        flash(
+            message="You cannot leave a review on an item that is already sold.",
+            category="error",
+        )
+        return redirect(location=request.referrer or url_for("index"))
 
-    text = request.form.get('comment_text', '').strip()
-    rating = int(request.form.get('rating', 0))
+    text = request.form.get("comment_text", "").strip()
+    rating = int(request.form.get("rating", 0))
 
-    if text == '' and rating == 0:
-        flash(message="Please provide a star rating or write a comment!", category="error")
-        return redirect(location=request.referrer or url_for('index'))
+    if text == "" and rating == 0:
+        flash(
+            message="Please provide a star rating or write a comment!", category="error"
+        )
+        return redirect(location=request.referrer or url_for("index"))
 
     new_comment = Comment(
         skin_id=skin_id,
         user_id=current_user.id,
         user_name=current_user.username,
-        comment_text=text if text != '' else None,
+        comment_text=text if text != "" else None,
         rating=rating if rating > 0 else None,
-        timestamp=datetime.now()
+        timestamp=datetime.now(),
     )
     db.session.add(new_comment)
     db.session.commit()
 
     flash(message="Review added successfully!", category="success")
-    return redirect(location=request.referrer or url_for('index'))
+    return redirect(location=request.referrer or url_for("index"))
+
 
 # Delete comment logic
-@app.route('/delete_comment/<int:comment_id>', methods=['POST'])
+@app.route("/delete_comment/<int:comment_id>", methods=["POST"])
 @login_required
 def delete_comment(comment_id):
     comment = Comment.query.get_or_404(comment_id)
 
-    is_owner = (comment.user_id == current_user.id)
-    is_admin = (current_user.user_type == 'admin')
+    is_owner = comment.user_id == current_user.id
+    is_admin = current_user.user_type == "admin"
 
     if not is_owner and not is_admin:
-        flash(message="Unauthorized! You cannot delete someone else's review.", category="error")
-        return redirect(location=request.referrer or url_for('index'))
+        flash(
+            message="Unauthorized! You cannot delete someone else's review.",
+            category="error",
+        )
+        return redirect(location=request.referrer or url_for("index"))
 
     db.session.delete(comment)
     db.session.commit()
 
     flash(message="Review deleted successfully.", category="success")
-    return redirect(location=request.referrer or url_for('index'))
+    return redirect(location=request.referrer or url_for("index"))
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5005, debug=True)
