@@ -1,8 +1,6 @@
 from datetime import datetime
-
 from flask_login import UserMixin
 from werkzeug.security import check_password_hash, generate_password_hash
-
 from extensions import db, login
 
 
@@ -34,7 +32,7 @@ class User(UserMixin, db.Model):
     balance = db.Column(db.Float, default=0.0)
     owned_skins = db.relationship('Skin', backref='owner', lazy=True, passive_deletes=True)
     cart_items = db.relationship('CartItem', backref='user', lazy=True, cascade='all, delete-orphan')
-    review = db.relationship('Comment', backref='author', lazy=True)
+    review = db.relationship('Comment', backref='author', lazy=True, cascade='all, delete-orphan')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -70,7 +68,7 @@ class Comment(db.Model):
   __tablename__ = 'comments'
   id = db.Column(db.Integer, primary_key=True)
   skin_id = db.Column(db.Integer, db.ForeignKey('skins.id'), nullable=False)
-  user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+  user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
   user_name = db.Column(db.String(16), nullable=False)
   timestamp = db.Column(db.DateTime, default=datetime.now)
   rating = db.Column(db.Integer, nullable=True)
