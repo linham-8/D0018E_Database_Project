@@ -133,9 +133,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const currentUserId = document.body.dataset.currentUserId;
 
       if (currentUserId && currentUserId == data.ownerId) {
-        form.classList.remove('hidden'); // Show it! They own it.
+        form.classList.remove('hidden');
       } else {
-        form.classList.add('hidden'); // Hide it! Unsold, or someone else owns it.
+        form.classList.add('hidden');
       }
 
       // Fetch Comments
@@ -233,10 +233,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const modal = document.getElementById('itemModal');
   if (!modal) return;
 
-  // =========================================================
-  // 1. STAR RATING LOGIC (Strictly isolated to the form!)
-  // =========================================================
-  // Notice we added #commentForm to the query so it ONLY gets the 5 modal stars
+  // Star rating logic
   const formStars = document.querySelectorAll('#commentForm .js-star');
   const ratingInput = document.getElementById('hiddenRatingInput');
 
@@ -271,9 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // =========================================================
-  // 2. MODAL OPEN LOGIC
-  // =========================================================
+  // Modal open logic
   document.body.addEventListener('click', e => {
     const card = e.target.closest('.js-skin-card');
 
@@ -343,7 +338,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
-      // --- RESET THE MODAL STARS ONLY ---
+      // Reset stars
       const activeRatingInput = document.getElementById('hiddenRatingInput');
       const activeFormStars = document.querySelectorAll(
         '#commentForm .js-star',

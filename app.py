@@ -674,7 +674,7 @@ def get_comments(skin_id):
 def add_comment(skin_id):
     skin = Skin.query.get_or_404(skin_id)
 
-    if skin.owner_id == current_user.id and skin.owner_id is not None:
+    if skin.owner_id == current_user.id and skin.owner_id is not None and Comment.query.filter_by(skin_id=skin.id).first() is None:
       text = request.form.get("comment_text", "").strip()
       rating = int(request.form.get("rating", 0))
 
@@ -696,6 +696,13 @@ def add_comment(skin_id):
       db.session.commit()
 
       flash(message="Review added successfully!", category="success")
+      return redirect(location=request.referrer or url_for("index"))
+    # Print error message for trying to leave a additional review on a bought item
+    elif skin.owner_id == current_user.id and Comment.query.filter_by(skin_id=skin.id).first() is not None:
+      flash(
+        message="You can only leave one review on an item",
+        category="error",
+      )
       return redirect(location=request.referrer or url_for("index"))
     # Only review items you bought
     else:
