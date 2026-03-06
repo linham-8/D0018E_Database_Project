@@ -71,7 +71,7 @@ class CartItem(db.Model):
 class Comment(db.Model):
   __tablename__ = 'comments'
   id = db.Column(db.Integer, primary_key=True)
-  skin_id = db.Column(db.Integer, db.ForeignKey('skins.id'), nullable=False)
+  skin_id = db.Column(db.Integer, db.ForeignKey('skins.id', ondelete='CASCADE'), nullable=False)
   user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
   user_name = db.Column(db.String(16), nullable=False)
   timestamp = db.Column(db.DateTime, default=datetime.now)
