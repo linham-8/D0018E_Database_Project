@@ -12,6 +12,17 @@
             class="bg-gray-800 p-4 rounded-card border border-gray-700 space-y-6 max-h-[calc(100vh-9rem)] overflow-y-auto">
 
             <div>
+                <label class="block text-xs font-bold text-gray-500 mb-2 uppercase">Availability</label>
+                <select name="availability"
+                    class="w-full bg-gray-900 border border-gray-600 rounded-btn p-2 text-sm text-gray-200 focus:border-accent outline-none mb-6">
+                    <option value="market" {% if current_availability=='market' %}selected{% endif %}>Market (Unsold)
+                    </option>
+                    <option value="all" {% if current_availability=='all' %}selected{% endif %}>All Skins</option>
+                    <option value="sold" {% if current_availability=='sold' %}selected{% endif %}>Sold Skins</option>
+                </select>
+            </div>
+
+            <div>
                 <label class="block text-xs font-bold text-gray-500 mb-2 uppercase">Doppler Phase</label>
                 <select name="phase"
                     class="w-full bg-gray-900 border border-gray-600 rounded-btn p-2 text-sm text-gray-200 focus:border-accent outline-none">

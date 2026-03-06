@@ -157,7 +157,10 @@ def get_grouped_view_data(filters):
 
     query = apply_common_filters(query, filters)
 
-    query = query.filter(Skin.owner_id == None)
+    if filters.get("availability") == "market":
+        query = query.filter(Skin.owner_id == None)
+    elif filters.get("availability") == "sold":
+        query = query.filter(Skin.owner_id != None)
 
     query = query.group_by(Skin.name, Skin.rarity)
     skins = query.order_by(func.min(Skin.price).desc()).all()
@@ -173,7 +176,10 @@ def get_list_view_data(filters, sort_by, page):
 
     query = apply_common_filters(query, filters)
 
-    query = query.filter(Skin.owner_id == None)
+    if filters.get("availability") == "market":
+        query = query.filter(Skin.owner_id == None)
+    elif filters.get("availability") == "sold":
+        query = query.filter(Skin.owner_id != None)
 
     sort_options = {
         "price_asc": Skin.price.asc(),
@@ -247,6 +253,7 @@ def index():
         "search": request.args.get("search", ""),
         "weapon": request.args.get("weapon", ""),
         "category": request.args.get("category", ""),
+        "availability": request.args.get("availability", "market"),
         "phase": request.args.get("phase", ""),
         "min_float": request.args.get("min_float", 0.0, type=float),
         "max_float": request.args.get("max_float", 1.0, type=float),
@@ -262,6 +269,7 @@ def index():
         "current_search": filters["search"],
         "current_weapon": filters["weapon"],
         "current_category": filters["category"],
+        "current_availability": filters["availability"],
         "current_phase": filters["phase"],
         "current_min_float": filters["min_float"],
         "current_max_float": filters["max_float"],
