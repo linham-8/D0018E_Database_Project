@@ -41,7 +41,7 @@
 <div class="js-skin-card cursor-pointer aspect-square border border-gray-700 p-4 flex flex-col justify-between bg-gray-800 rounded-card hover:shadow-lg transition-all relative group"
     data-id="{{ skin.id }}" data-name="{{ skin.name}}" data-price="{{ skin.price }}" data-wear="{{ skin.wear_name }}"
     data-image="{{ skin.image }}" data-stattrak="{{ skin.is_stattrak }}" data-float="{{ skin.float_value }}"
-    data-seed="{{ skin.paint_seed }}" data-rarity="{{ skin.rarity }}"
+    data-seed="{{ skin.paint_seed }}" data-rarity="{{ skin.rarity }}" data-owner-id="{{ skin.owner_id or '' }}"
     data-pattern="{% if skin.pattern %}{{ skin.pattern.name }}{% else %}None{% endif %}"
     data-incart="{% if skin.id in cart_skin_ids %}true{% else %}false{% endif %}"
     data-sold="{% if skin.owner_id %}true{% else %}false{% endif %}">
