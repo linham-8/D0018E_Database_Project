@@ -91,23 +91,29 @@ document.addEventListener('DOMContentLoaded', () => {
       window.currentSelectedItemId = data.id;
 
       const inCart = data.incart === 'true';
+      const isSold = data.sold === 'true';
       const addToCartForm = document.getElementById('modalAddToCartForm');
       const addToCartBtn = document.getElementById('modalAddToCartBtn');
       const commentsList = document.getElementById('modalCommentsList');
 
       if (addToCartForm && addToCartBtn) {
-        if (inCart) {
-          addToCartForm.action = '';
-          addToCartBtn.disabled = true;
-          addToCartBtn.textContent = 'In Cart';
-          addToCartBtn.className =
-            'w-full bg-gray-600 text-gray-400 py-2 rounded-btn font-bold cursor-not-allowed';
+        if (isSold) {
+          addToCartForm.style.display = 'none';
         } else {
-          addToCartForm.action = '/add_to_cart/' + data.id;
-          addToCartBtn.disabled = false;
-          addToCartBtn.textContent = 'Add to Cart';
-          addToCartBtn.className =
-            'w-full bg-accent text-gray-900 py-2 rounded-btn font-bold hover:bg-accent-hover transition-colors';
+          addToCartForm.style.display = 'block';
+          if (inCart) {
+            addToCartForm.action = '';
+            addToCartBtn.disabled = true;
+            addToCartBtn.textContent = 'In Cart';
+            addToCartBtn.className =
+              'w-full bg-gray-600 text-gray-400 py-2 rounded-btn font-bold cursor-not-allowed';
+          } else {
+            addToCartForm.action = '/add_to_cart/' + data.id;
+            addToCartBtn.disabled = false;
+            addToCartBtn.textContent = 'Add to Cart';
+            addToCartBtn.className =
+              'w-full bg-accent text-gray-900 py-2 rounded-btn font-bold hover:bg-accent-hover transition-colors';
+          }
         }
       }
 

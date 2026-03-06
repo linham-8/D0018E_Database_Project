@@ -43,7 +43,8 @@
     data-image="{{ skin.image }}" data-stattrak="{{ skin.is_stattrak }}" data-float="{{ skin.float_value }}"
     data-seed="{{ skin.paint_seed }}" data-rarity="{{ skin.rarity }}"
     data-pattern="{% if skin.pattern %}{{ skin.pattern.name }}{% else %}None{% endif %}"
-    data-incart="{% if skin.id in cart_skin_ids %}true{% else %}false{% endif %}">
+    data-incart="{% if skin.id in cart_skin_ids %}true{% else %}false{% endif %}"
+    data-sold="{% if skin.owner_id %}true{% else %}false{% endif %}">
     <div class="absolute top-0 left-0 right-0 h-1 rounded-t-card opacity-80 {{ get_rarity_class(skin.rarity|string) }}">
     </div>
 
@@ -68,7 +69,12 @@
             </div>
 
             {% if current_user.is_authenticated %}
-            {% if skin.id in cart_skin_ids %}
+            {% if skin.owner_id %}
+            <button disabled
+                class="bg-gray-700 text-gray-500 font-bold py-1 px-3 rounded-btn text-[10px] cursor-not-allowed">
+                Sold
+            </button>
+            {% elif skin.id in cart_skin_ids %}
             <button disabled
                 class="bg-gray-600 text-gray-400 font-bold py-1 px-3 rounded-btn text-[10px] cursor-not-allowed">
                 In Cart
