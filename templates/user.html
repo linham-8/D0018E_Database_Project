@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 
-{% from "macros.html" import display_flashed_messages with context %}
-
+{% from "macros.html" import display_flashed_messages, skin_card with context %}
 {% block content %}
 <h2 class="mt-5 text-center text-2xl font-bold leading-9 tracking-tight text-white">
     Welcome to your account, {{ current_user.username }}
@@ -129,11 +128,7 @@
                         {% if owned_skins %}
                         <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                             {% for skin in owned_skins %}
-                            <div class="bg-gray-900 border border-gray-700 rounded-lg p-3 text-center">
-                                <img src="{{ skin.image }}" alt="Skin" class="h-24 mx-auto object-contain mb-2">
-                                <p class="text-sm font-bold text-white truncate">{{ skin.name }}</p>
-                                <p class="text-xs text-gray-400">{{ skin.wear_name }}</p>
-                            </div>
+                            {{ skin_card(skin) }}
                             {% endfor %}
                         </div>
                         {% else %}
@@ -195,4 +190,7 @@
         }
     });
 </script>
+
+<script src="{{ url_for('static', filename='js/script.js') }}" defer></script>
+
 {% endblock %}
