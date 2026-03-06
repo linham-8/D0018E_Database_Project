@@ -7,10 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const modal = document.getElementById('itemModal');
   if (!modal) return;
 
-  // =========================================================
-  // 1. STAR RATING LOGIC (Strictly isolated to the form!)
-  // =========================================================
-  // Notice we added #commentForm to the query so it ONLY gets the 5 modal stars
+  // Star rating logic
   const formStars = document.querySelectorAll('#commentForm .js-star');
   const ratingInput = document.getElementById('hiddenRatingInput');
 
@@ -45,9 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // =========================================================
-  // 2. MODAL OPEN LOGIC
-  // =========================================================
+  // Modal opening logic
   document.body.addEventListener('click', e => {
     const card = e.target.closest('.js-skin-card');
 
@@ -111,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
-      // --- RESET THE MODAL STARS ONLY ---
+      // Resets the stars
       const activeRatingInput = document.getElementById('hiddenRatingInput');
       const activeFormStars = document.querySelectorAll(
         '#commentForm .js-star',
@@ -133,6 +128,15 @@ document.addEventListener('DOMContentLoaded', () => {
       // Update Comment Form URL
       const form = document.getElementById('commentForm');
       if (form) form.action = `/add_comment/${data.id}`;
+
+      // Get the ID of the logged in user
+      const currentUserId = document.body.dataset.currentUserId;
+
+      if (currentUserId && currentUserId == data.ownerId) {
+        form.classList.remove('hidden'); // Show it! They own it.
+      } else {
+        form.classList.add('hidden'); // Hide it! Unsold, or someone else owns it.
+      }
 
       // Fetch Comments
       if (commentsList) {
@@ -212,7 +216,6 @@ window.closeModal = function () {
     const sidebar = document.getElementById('filterSidebar');
     if (sidebar) sidebar.style.opacity = '1';
   }
-
 };
 
 // Close modal on Escape key press

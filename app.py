@@ -666,37 +666,36 @@ def get_comments(skin_id):
 def add_comment(skin_id):
     skin = Skin.query.get_or_404(skin_id)
 
-    # Prevent reviewing sold items
-    if skin.owner_id is not None:
-        flash(
-            message="You cannot leave a review on an item that is already sold.",
-            category="error",
-        )
-        return redirect(location=request.referrer or url_for("index"))
+    if skin.owner_id == current_user.id and skin.owner_id is not None:
+      text = request.form.get("comment_text", "").strip()
+      rating = int(request.form.get("rating", 0))
 
-    text = request.form.get("comment_text", "").strip()
-    rating = int(request.form.get("rating", 0))
-
-    if text == "" and rating == 0:
+      if text == "" and rating == 0:
         flash(
             message="Please provide a star rating or write a comment!", category="error"
         )
         return redirect(location=request.referrer or url_for("index"))
 
-    new_comment = Comment(
+      new_comment = Comment(
         skin_id=skin_id,
         user_id=current_user.id,
         user_name=current_user.username,
         comment_text=text if text != "" else None,
         rating=rating if rating > 0 else None,
         timestamp=datetime.now(),
-    )
-    db.session.add(new_comment)
-    db.session.commit()
+      )
+      db.session.add(new_comment)
+      db.session.commit()
 
-    flash(message="Review added successfully!", category="success")
-    return redirect(location=request.referrer or url_for("index"))
-
+      flash(message="Review added successfully!", category="success")
+      return redirect(location=request.referrer or url_for("index"))
+    # Only review items you bought
+    else:
+      flash(
+          message="You can only leave a review on items you have purchased",
+          category="error",
+      )
+      return redirect(location=request.referrer or url_for("index"))
 
 # Delete comment logic
 @app.route("/delete_comment/<int:comment_id>", methods=["POST"])
